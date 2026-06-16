@@ -1,0 +1,9 @@
+{
+  "id": "default",
+  "description": "Balanced defaults — blocks secrets and high-confidence injection, anonymizes PII, no denied topics.",
+  "guardrailId": "sentinel-default",
+  "guardrailVersion": "1",
+  "promptInjection": { "mode": "block", "threshold": 0.7 },
+  "redactionStyle": "anonymize",
+  "deniedTopics": []
+}

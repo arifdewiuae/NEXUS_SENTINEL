@@ -1,0 +1,9 @@
+{
+  "id": "strict",
+  "description": "Maximum protection — blocks injection at low confidence, denies medical & legal topics, anonymizes PII.",
+  "guardrailId": "sentinel-strict",
+  "guardrailVersion": "1",
+  "promptInjection": { "mode": "block", "threshold": 0.5 },
+  "redactionStyle": "anonymize",
+  "deniedTopics": ["medical_diagnosis", "legal_advice"]
+}

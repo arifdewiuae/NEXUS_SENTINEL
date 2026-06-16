@@ -1,0 +1,9 @@
+{
+  "id": "permissive",
+  "description": "Light touch — flags injection without blocking, anonymizes PII, no denied topics. For trusted internal prompts.",
+  "guardrailId": "sentinel-permissive",
+  "guardrailVersion": "1",
+  "promptInjection": { "mode": "flag", "threshold": 0.9 },
+  "redactionStyle": "anonymize",
+  "deniedTopics": []
+}

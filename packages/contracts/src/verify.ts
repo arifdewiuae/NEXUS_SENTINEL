@@ -10,7 +10,12 @@ import {
 export const MAX_PROMPT_LENGTH = 25_000;
 
 export const verifyRequestSchema = z.object({
-  prompt: z.string().min(1).max(MAX_PROMPT_LENGTH),
+  prompt: z
+    .string()
+    .min(1)
+    .max(MAX_PROMPT_LENGTH)
+    // eslint-disable-next-line no-control-regex -- intentionally rejecting control chars
+    .refine((s) => !/[\u0000-\u0008]/.test(s), 'Prompt must not contain control characters'),
   policyId: z.string().min(1).default('default'),
   context: promptContextSchema.optional(),
   appId: z.string().min(1).optional(),
