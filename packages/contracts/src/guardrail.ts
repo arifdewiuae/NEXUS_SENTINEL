@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { confidenceLevelSchema, contentFilterTypeSchema, guardrailActionSchema } from './common.js';
+import { confidenceLevelSchema, contentFilterTypeSchema, guardrailActionSchema } from './common';
 
 /**
  * Normalized output of the guardrail port. Adapters translate the raw Bedrock

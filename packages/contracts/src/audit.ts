@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { decisionSchema, promptContextSchema, recommendedActionSchema } from './common.js';
-import { latencyBreakdownSchema, matchSchema, scoresSchema } from './verify.js';
+import { decisionSchema, promptContextSchema, recommendedActionSchema } from './common';
+import { latencyBreakdownSchema, matchSchema, scoresSchema } from './verify';
 
 /**
  * One row per `/v1/verify` call. The raw prompt is stored for the audit trail

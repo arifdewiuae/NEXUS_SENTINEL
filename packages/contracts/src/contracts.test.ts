@@ -5,7 +5,7 @@ import {
   policySchema,
   verifyRequestSchema,
   verifyResponseSchema,
-} from './index.js';
+} from './index';
 
 describe('contracts', () => {
   it('applies defaults on verify request', () => {

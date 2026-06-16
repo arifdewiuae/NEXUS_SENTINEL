@@ -4,7 +4,7 @@ import {
   matchCategorySchema,
   promptContextSchema,
   recommendedActionSchema,
-} from './common.js';
+} from './common';
 
 /** Maximum prompt length accepted by `/v1/verify` (bounds Bedrock cost/latency). */
 export const MAX_PROMPT_LENGTH = 25_000;
