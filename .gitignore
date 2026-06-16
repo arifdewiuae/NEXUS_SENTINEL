@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+.next/
+out/
+
+# cdk
+infra/cdk.out/
+*.d.ts.map
+
+# test / coverage
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+.idea/
+*.swp
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+.next
+out
+coverage
+infra/cdk.out
+pnpm-lock.yaml
+*.tsbuildinfo
+
+# author's design doc — left as authored
+NEXUS_SENTINEL_DESIGN.md
