@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // The dashboard is a pure client of the API (no server actions / route
+  // handlers), so it ships as a static export served from S3 + CloudFront.
+  output: 'export',
   // The dashboard is a pure client of the verifier API; no server secrets here.
   // The API base URL is injected at build time (App Runner URL in production).
   env: {

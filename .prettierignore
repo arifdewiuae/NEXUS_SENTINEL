@@ -11,5 +11,8 @@ infra/cdk.out
 pnpm-lock.yaml
 *.tsbuildinfo
 
+# generated OpenAPI artifact (regenerate with `pnpm --filter @nexus/api openapi`)
+apps/api/openapi.json
+
 # author's design doc — left as authored
 NEXUS_SENTINEL_DESIGN.md

@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/config.module';
+import { buildOpenApiDocument } from './swagger';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -21,13 +22,7 @@ async function bootstrap(): Promise<void> {
   });
   app.enableShutdownHooks();
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Nexus Sentinel')
-    .setDescription('A self-hosted prompt firewall for any LLM. One endpoint: POST /v1/verify.')
-    .setVersion('0.1.0')
-    .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'api-key')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document = buildOpenApiDocument(app);
   SwaggerModule.setup('docs', app, document, { jsonDocumentUrl: 'docs/openapi.json' });
 
   const port = config.get('PORT');

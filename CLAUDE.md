@@ -62,6 +62,10 @@ pnpm --filter @nexus/infra synth  # cdk synth (no deploy)
 - Decision logic → `apps/api/src/aggregate/verdict-aggregator.ts`
 - Fan-out + fail-open/closed policy → `apps/api/src/verify/verify.use-case.ts`
 - Adapter selection → `apps/api/src/adapters/adapters.module.ts`
+- AWS adapters (Bedrock/DynamoDB) → `apps/api/src/adapters/aws/`
 - Policies → `apps/api/src/policy/policies/{strict,default,permissive}.json`
-- Guardrail provisioning → `infra/lib/guardrails-stack.ts`
-- AWS onboarding → `docs/onboarding-aws-bedrock.md`
+  (guardrail ids overlaid from `GUARDRAIL_<POLICY>_ID` / `_VERSION` env at boot)
+- Guardrail provisioning → `infra/lib/guardrails-stack.ts` + `sentinel-guardrail.ts`
+- CDK app entrypoint → `infra/bin/nexus-sentinel.ts`
+- AWS onboarding → `docs/onboarding-aws-bedrock.md`; ADRs → `docs/adr/`
+- Committed OpenAPI spec → `apps/api/openapi.json` (regen: `pnpm --filter @nexus/api openapi`)
