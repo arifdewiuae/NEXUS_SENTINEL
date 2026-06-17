@@ -39,8 +39,9 @@ export function Dashboard() {
     try {
       const res = await api.verify({ prompt, policyId });
       setVerdict(res);
+      const ts = new Date().toLocaleTimeString(undefined, { hour12: false });
       setFeed((prev) => [
-        { requestId: res.requestId, prompt, policyId: res.policyId, decision: res.decision },
+        { requestId: res.requestId, prompt, policyId: res.policyId, decision: res.decision, ts },
         ...prev,
       ]);
     } catch (err) {
@@ -68,8 +69,8 @@ export function Dashboard() {
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-      <div className="space-y-6">
+    <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <div className="space-y-4">
         <VerifierForm
           policies={policies}
           pending={pending}
@@ -79,24 +80,24 @@ export function Dashboard() {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm text-rose-300"
+            className="rounded-sm border border-[#ff4d4d]/50 bg-[#ff4d4d]/10 px-4 py-2 font-mono text-sm text-[#ff9a9a] mx-glow-red"
           >
-            {error}
+            ! {error}
           </p>
         )}
 
         {verdict && <VerdictCard verdict={verdict} />}
 
         {replayTarget && (
-          <section
-            aria-label="Replay controls"
-            className="rounded-2xl border border-slate-700 bg-slate-800/40 p-5"
-          >
-            <h3 className="text-sm font-semibold text-slate-200">
-              Replay under a different policy
+          <section aria-label="Replay controls" className="mx-panel rounded-sm p-5">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-green/80">
+              ▸ Replay under a different policy
             </h3>
-            <p className="mt-1 truncate text-xs text-slate-500" title={replayTarget.prompt}>
-              {replayTarget.prompt}
+            <p
+              className="mt-1.5 truncate font-mono text-xs text-mx-muted"
+              title={replayTarget.prompt}
+            >
+              &gt; {replayTarget.prompt}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <label htmlFor="replay-policy" className="sr-only">
@@ -106,10 +107,10 @@ export function Dashboard() {
                 id="replay-policy"
                 value={replayPolicyId}
                 onChange={(e) => setReplayPolicyId(e.target.value)}
-                className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                className="rounded-sm border border-[#00ff41]/30 bg-black/40 px-3 py-2 font-mono text-sm text-mx-text focus:border-[#00ff41] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41]"
               >
                 {policies.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.id} value={p.id} className="bg-mx-bg">
                     {p.id}
                   </option>
                 ))}
@@ -118,7 +119,7 @@ export function Dashboard() {
                 type="button"
                 onClick={() => void handleReplay()}
                 disabled={replayPending}
-                className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50"
+                className="rounded-sm border border-[#00ff41]/70 bg-[#00ff41]/10 px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-[#7dffa0] mx-glow transition hover:bg-[#00ff41]/20 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41] disabled:opacity-40"
               >
                 {replayPending ? 'Replaying…' : 'Run replay'}
               </button>
@@ -133,7 +134,9 @@ export function Dashboard() {
       </div>
 
       <aside className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Activity</h2>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-mx-green/70">
+          ▸ Activity log
+        </h2>
         <ActivityFeed
           items={feed}
           activeRequestId={replayTarget?.requestId}

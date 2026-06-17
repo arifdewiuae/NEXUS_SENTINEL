@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Nexus Sentinel dashboard', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Nexus Sentinel' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /NEXUS:\/\/SENTINEL/ })).toBeVisible();
   });
 
   test('verifies a clean prompt as allow', async ({ page }) => {

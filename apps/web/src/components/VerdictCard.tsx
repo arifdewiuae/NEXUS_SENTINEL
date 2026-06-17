@@ -17,6 +17,8 @@ const CATEGORY_LABEL: Record<string, string> = {
   content: 'Content filter',
 };
 
+const sectionLabel = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-green/70';
+
 /** The hero result panel: decision, recommended action, scores, evidence. */
 export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
   const { decision, recommendedAction, scores, matches, redactedPrompt, latencyMs } = verdict;
@@ -29,20 +31,21 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
     <section
       aria-label="Verification result"
       data-testid="verdict-card"
-      className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 shadow-lg"
+      className="mx-panel rounded-sm p-4 sm:p-5"
     >
-      <header className="flex flex-wrap items-center justify-between gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#00ff41]/15 pb-3">
         <div className="flex items-center gap-3">
+          <span className={sectionLabel}>Verdict</span>
           <DecisionBadge decision={decision} />
-          <span className="text-sm text-slate-400">{ACTION_LABEL[recommendedAction]}</span>
+          <span className="text-sm text-mx-text/60">{ACTION_LABEL[recommendedAction]}</span>
         </div>
-        <span className="font-mono text-xs text-slate-500">{latencyMs.total} ms</span>
+        <span className="font-mono text-xs text-mx-muted">{latencyMs.total} ms</span>
       </header>
 
-      <div className="mt-5 space-y-2">
+      <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
         <ScoreBar label="PII" score={scores.pii} barClass={style.bar} />
         <ScoreBar label="Secrets" score={scores.secrets} barClass={style.bar} />
-        <ScoreBar label="Prompt injection" score={scores.promptInjection} barClass={style.bar} />
+        <ScoreBar label="Injection" score={scores.promptInjection} barClass={style.bar} />
         {topics.map(([name, score]) => (
           <ScoreBar key={`topic-${name}`} label={name} score={score} barClass={style.bar} />
         ))}
@@ -52,15 +55,15 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
       </div>
 
       {matches.length > 0 && (
-        <div className="mt-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Evidence</h3>
+        <div className="mt-4">
+          <h3 className={sectionLabel}>Evidence</h3>
           <ul className="mt-2 flex flex-wrap gap-2" data-testid="match-list">
             {matches.map((m, i) => (
               <li
                 key={`${m.category}-${m.type}-${i}`}
-                className="rounded-md bg-slate-700/60 px-2 py-1 text-xs text-slate-200"
+                className="rounded-sm border border-[#00ff41]/20 bg-black/30 px-2 py-1 font-mono text-xs text-mx-text"
               >
-                <span className="text-slate-400">{CATEGORY_LABEL[m.category] ?? m.category}:</span>{' '}
+                <span className="text-mx-muted">{CATEGORY_LABEL[m.category] ?? m.category}:</span>{' '}
                 {m.type}
               </li>
             ))}
@@ -69,11 +72,9 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
       )}
 
       {redactedPrompt && (
-        <div className="mt-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Redacted prompt
-          </h3>
-          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-md bg-slate-900/70 p-3 text-sm text-slate-200">
+        <div className="mt-4">
+          <h3 className={sectionLabel}>Redacted prompt</h3>
+          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-sm border border-[#00ff41]/20 bg-black/40 p-3 text-sm text-[#7dffa0]">
             {redactedPrompt}
           </pre>
         </div>

@@ -1,10 +1,111 @@
 @import 'tailwindcss';
 
+/* Matrix terminal design tokens, exposed to Tailwind as utilities. */
+@theme {
+  --color-mx-bg: #050805;
+  --color-mx-panel: #0a140a;
+  --color-mx-green: #00ff41;
+  --color-mx-green-dim: #19b34a;
+  --color-mx-green-deep: #0a3d1a;
+  --color-mx-text: #b6f5c8;
+  --color-mx-muted: #4f8c63;
+  --color-mx-amber: #ffb000;
+  --color-mx-red: #ff4d4d;
+  --font-mono:
+    var(--font-jbmono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 :root {
   color-scheme: dark;
 }
 
+html {
+  background-color: var(--color-mx-bg);
+}
+
 body {
-  background-color: #0f172a; /* slate-900 */
-  color: #e2e8f0; /* slate-200 */
+  background-color: var(--color-mx-bg);
+  color: var(--color-mx-text);
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: rgba(0, 255, 65, 0.25);
+  color: #eaffef;
+}
+
+/* Phosphor glow helpers ----------------------------------------------------- */
+.mx-glow {
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.7);
+}
+.mx-glow-amber {
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.7);
+}
+.mx-glow-red {
+  text-shadow: 0 0 7px rgba(255, 77, 77, 0.75);
+}
+
+/* A bracketed terminal panel: translucent so the rain bleeds through faintly. */
+.mx-panel {
+  position: relative;
+  background: rgba(5, 14, 6, 0.72);
+  border: 1px solid rgba(0, 255, 65, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 65, 0.04),
+    0 0 18px rgba(0, 255, 65, 0.08),
+    inset 0 0 24px rgba(0, 30, 8, 0.4);
+  backdrop-filter: blur(1px);
+}
+
+/* Blinking terminal caret. */
+.mx-caret::after {
+  content: '▋';
+  margin-left: 0.15rem;
+  color: var(--color-mx-green);
+  animation: mx-blink 1.05s step-end infinite;
+}
+@keyframes mx-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Subtle pulse for a block verdict. */
+.mx-pulse {
+  animation: mx-pulse 1.6s ease-in-out infinite;
+}
+@keyframes mx-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(255, 77, 77, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 77, 77, 0.85);
+  }
+}
+
+/* CRT flicker for the scanline overlay. */
+.mx-flicker {
+  animation: mx-flicker 7s infinite;
+}
+@keyframes mx-flicker {
+  0%,
+  96%,
+  100% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 0.82;
+  }
+  98% {
+    opacity: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-caret::after,
+  .mx-pulse,
+  .mx-flicker {
+    animation: none !important;
+  }
 }

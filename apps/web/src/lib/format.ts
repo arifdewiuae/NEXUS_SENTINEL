@@ -5,22 +5,32 @@ export function asPercent(score: number): string {
   return `${Math.round(score * 100)}%`;
 }
 
-/** Tailwind utility classes for each decision, used by badges and bars. */
-export const DECISION_STYLE: Record<Decision, { label: string; chip: string; bar: string }> = {
+/**
+ * Tailwind utility classes per decision (Matrix terminal palette). Colours are
+ * kept meaningful — green/amber/red — with phosphor glow. `glow` is applied to
+ * the block badge for a pulsing alarm.
+ */
+export const DECISION_STYLE: Record<
+  Decision,
+  { label: string; chip: string; bar: string; glow: string }
+> = {
   allow: {
     label: 'Allow',
-    chip: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
-    bar: 'bg-emerald-500',
+    chip: 'border-[#00ff41]/50 bg-[#00ff41]/10 text-[#7dffa0] mx-glow',
+    bar: 'bg-[#00ff41]',
+    glow: '',
   },
   redact: {
     label: 'Redact',
-    chip: 'bg-amber-500/15 text-amber-300 ring-amber-500/30',
-    bar: 'bg-amber-500',
+    chip: 'border-[#ffb000]/50 bg-[#ffb000]/10 text-[#ffd07a] mx-glow-amber',
+    bar: 'bg-[#ffb000]',
+    glow: '',
   },
   block: {
     label: 'Block',
-    chip: 'bg-rose-500/15 text-rose-300 ring-rose-500/30',
-    bar: 'bg-rose-500',
+    chip: 'border-[#ff4d4d]/60 bg-[#ff4d4d]/10 text-[#ff9a9a] mx-glow-red',
+    bar: 'bg-[#ff4d4d]',
+    glow: 'mx-pulse',
   },
 };
 
