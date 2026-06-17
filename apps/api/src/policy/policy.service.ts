@@ -19,12 +19,26 @@ export class PolicyService {
 
   constructor() {
     for (const raw of RAW_POLICIES) {
-      const policy = policySchema.parse(raw);
+      const policy = this.overlayGuardrail(policySchema.parse(raw));
       this.policies.set(policy.id, policy);
     }
     this.logger.log(
       `Loaded ${this.policies.size} policies: ${[...this.policies.keys()].join(', ')}`,
     );
+  }
+
+  /**
+   * The bundled policy files carry placeholder guardrail ids. When the real
+   * guardrails are provisioned (CDK), their ids/versions arrive as env vars
+   * (`GUARDRAIL_<POLICY_ID>_ID` / `_VERSION`) and are overlaid here, so the
+   * source of truth stays the file while deployment supplies the live binding.
+   */
+  private overlayGuardrail(policy: Policy): Policy {
+    const key = policy.id.toUpperCase();
+    const guardrailId = process.env[`GUARDRAIL_${key}_ID`];
+    const guardrailVersion = process.env[`GUARDRAIL_${key}_VERSION`];
+    if (!guardrailId || !guardrailVersion) return policy;
+    return { ...policy, guardrailId, guardrailVersion };
   }
 
   /** Resolve a policy by id, throwing `PolicyNotFoundError` if unknown. */
