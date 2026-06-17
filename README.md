@@ -49,9 +49,17 @@ asserted, not aspirational.
 
 ```bash
 pnpm install
-pnpm --filter @nexus/api start:dev      # API on :3000 (PROVIDER=fake)
-pnpm --filter @nexus/web dev            # dashboard on :3001
+pnpm dev          # API on :3000 + dashboard on :3001, one command (PROVIDER=fake)
 ```
+
+`pnpm dev` runs both services with interleaved, labelled logs. If port 3000 (or 3001) is
+taken, override them — the dashboard is pointed at the API automatically:
+
+```bash
+API_PORT=3010 WEB_PORT=3011 pnpm dev
+```
+
+You can also run them separately with `pnpm dev:api` / `pnpm dev:web`.
 
 Open <http://localhost:3001>, click a sample prompt, then **Replay** it under a different
 policy. Or hit the API directly:

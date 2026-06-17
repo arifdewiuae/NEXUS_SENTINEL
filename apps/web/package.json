@@ -4,7 +4,7 @@
   "private": true,
   "description": "Nexus Sentinel dashboard — Next.js verifier console.",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p ${WEB_PORT:-3001}",
     "build": "next build",
     "start": "next start -p 3001",
     "typecheck": "tsc --noEmit -p tsconfig.json",

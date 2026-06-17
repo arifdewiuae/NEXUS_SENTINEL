@@ -10,6 +10,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:api": "PORT=${API_PORT:-3000} pnpm --filter @nexus/api start:dev",
+    "dev:web": "NEXT_PUBLIC_API_URL=http://localhost:${API_PORT:-3000} WEB_PORT=${WEB_PORT:-3001} pnpm --filter @nexus/web dev",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -24,6 +27,7 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.18.0",
+    "concurrently": "^9.1.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.14.0",
