@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ApiError, api } from '@/lib/api';
 import type { FeedItem } from '@/lib/types';
 import { ActivityFeed } from './ActivityFeed';
+import { Button } from './Button';
 import { ReplayView } from './ReplayView';
 import { VerdictCard } from './VerdictCard';
 import { VerifierForm } from './VerifierForm';
@@ -83,7 +84,7 @@ export function Dashboard() {
         {error && (
           <p
             role="alert"
-            className="rounded-sm border border-[#ff4d4d]/50 bg-[#ff4d4d]/10 px-4 py-2 font-mono text-sm text-[#ff9a9a] mx-glow-red"
+            className="rounded-sm border border-mx-red/50 bg-mx-red/10 px-4 py-2 font-mono text-sm text-mx-red-soft mx-glow-red"
           >
             ! {error}
           </p>
@@ -93,7 +94,7 @@ export function Dashboard() {
 
         {replayTarget && (
           <section aria-label="Replay controls" className="mx-panel rounded-sm p-5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-green/80">
+            <h3 className="text-2xs font-semibold uppercase tracking-[0.2em] text-mx-green/80">
               ▸ Replay under a different policy
             </h3>
             <p
@@ -110,7 +111,7 @@ export function Dashboard() {
                 id="replay-policy"
                 value={replayPolicyId}
                 onChange={(e) => setReplayPolicyId(e.target.value)}
-                className="rounded-sm border border-[#00ff41]/30 bg-black/40 px-3 py-2 font-mono text-sm text-mx-text focus:border-[#00ff41] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41]"
+                className="rounded-sm border border-mx-green/30 bg-black/40 px-3 py-2 font-mono text-sm text-mx-text focus:border-mx-green focus:outline-none focus-visible:ring-1 focus-visible:ring-mx-green"
               >
                 {policies.map((p) => (
                   <option key={p.id} value={p.id} className="bg-mx-bg">
@@ -118,14 +119,13 @@ export function Dashboard() {
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
+              <Button
                 onClick={() => void handleReplay()}
                 disabled={replayPending}
-                className="rounded-sm border border-[#00ff41]/70 bg-[#00ff41]/10 px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-[#7dffa0] mx-glow transition hover:bg-[#00ff41]/20 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41] disabled:opacity-40"
+                className="px-4 py-2 text-sm tracking-[0.15em]"
               >
                 {replayPending ? 'Replaying…' : 'Run replay'}
-              </button>
+              </Button>
             </div>
             {replayResult && (
               <div className="mt-4">
@@ -137,7 +137,7 @@ export function Dashboard() {
       </div>
 
       <aside className="min-w-0 space-y-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-mx-green/70">
+        <h2 className="text-2xs font-semibold uppercase tracking-[0.25em] text-mx-green/70">
           ▸ Activity log
         </h2>
         <ActivityFeed

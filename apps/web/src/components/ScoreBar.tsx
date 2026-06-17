@@ -9,15 +9,15 @@ interface ScoreBarProps {
 
 /** A labelled 0–1 score as a segmented, glowing terminal gauge. Keeps the
  *  accessible progressbar semantics. */
-export function ScoreBar({ label, score, barClass = 'bg-[#00ff41]' }: ScoreBarProps) {
+export function ScoreBar({ label, score, barClass = 'bg-mx-green' }: ScoreBarProps) {
   const pct = Math.round(score * 100);
   return (
     <div className="flex items-center gap-2.5 text-sm">
-      <span className="w-32 shrink-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-mx-muted">
+      <span className="w-32 shrink-0 whitespace-nowrap text-3xs uppercase tracking-wide text-mx-muted">
         {label}
       </span>
       <div
-        className="relative h-2.5 flex-1 overflow-hidden rounded-[2px] border border-[#00ff41]/15 bg-[#06210f]"
+        className="relative h-2.5 flex-1 overflow-hidden rounded-[2px] border border-mx-green/15 bg-mx-gauge"
         role="progressbar"
         aria-label={label}
         aria-valuenow={pct}
@@ -37,7 +37,9 @@ export function ScoreBar({ label, score, barClass = 'bg-[#00ff41]' }: ScoreBarPr
           }}
         />
       </div>
-      <span className="w-12 shrink-0 text-right font-mono text-[#7dffa0]">{asPercent(score)}</span>
+      <span className="w-12 shrink-0 text-right font-mono text-mx-green-bright">
+        {asPercent(score)}
+      </span>
     </div>
   );
 }

@@ -11,14 +11,14 @@ export default function Home() {
               ▸ NEXUS://SENTINEL
               <span className="mx-caret" />
             </h1>
-            <span className="hidden text-[11px] tracking-wider text-mx-muted sm:inline">
+            <span className="hidden text-2xs tracking-wider text-mx-muted sm:inline">
               nexus@sentinel:~$ ./verify
             </span>
           </div>
           <p className="text-xs text-mx-text/60">
-            prompt firewall · <span className="text-[#7dffa0]">allow</span> ·{' '}
-            <span className="text-[#ffd07a]">redact</span> ·{' '}
-            <span className="text-[#ff9a9a]">block</span> · replay
+            prompt firewall · <span className="text-mx-green-bright">allow</span> ·{' '}
+            <span className="text-mx-amber-soft">redact</span> ·{' '}
+            <span className="text-mx-red-soft">block</span> · replay
           </p>
         </div>
       </header>

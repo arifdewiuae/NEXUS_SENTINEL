@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div
         role="alert"
-        className="mx-panel rounded-sm p-6 font-mono text-sm text-[#ff9a9a] mx-glow-red"
+        className="mx-panel rounded-sm p-6 font-mono text-sm text-mx-red-soft mx-glow-red"
         data-testid="error-boundary"
       >
         <p className="font-bold uppercase tracking-[0.2em]">▸ terminal offline</p>

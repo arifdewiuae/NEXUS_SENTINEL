@@ -16,20 +16,20 @@ export const DECISION_STYLE: Record<
 > = {
   allow: {
     label: 'Allow',
-    chip: 'border-[#00ff41]/50 bg-[#00ff41]/10 text-[#7dffa0] mx-glow',
-    bar: 'bg-[#00ff41]',
+    chip: 'border-mx-green/50 bg-mx-green/10 text-mx-green-bright mx-glow',
+    bar: 'bg-mx-green',
     glow: '',
   },
   redact: {
     label: 'Redact',
-    chip: 'border-[#ffb000]/50 bg-[#ffb000]/10 text-[#ffd07a] mx-glow-amber',
-    bar: 'bg-[#ffb000]',
+    chip: 'border-mx-amber/50 bg-mx-amber/10 text-mx-amber-soft mx-glow-amber',
+    bar: 'bg-mx-amber',
     glow: '',
   },
   block: {
     label: 'Block',
-    chip: 'border-[#ff4d4d]/60 bg-[#ff4d4d]/10 text-[#ff9a9a] mx-glow-red',
-    bar: 'bg-[#ff4d4d]',
+    chip: 'border-mx-red/60 bg-mx-red/10 text-mx-red-soft mx-glow-red',
+    bar: 'bg-mx-red',
     glow: 'mx-pulse',
   },
 };

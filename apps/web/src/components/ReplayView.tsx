@@ -3,9 +3,9 @@ import { DecisionBadge } from './DecisionBadge';
 
 function ReplaySide({ title, record }: { title: string; record: AuditRecord }) {
   return (
-    <div className="flex-1 rounded-sm border border-[#00ff41]/20 bg-black/30 p-4">
-      <div className="flex items-center justify-between border-b border-[#00ff41]/10 pb-2">
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-green/70">
+    <div className="flex-1 rounded-sm border border-mx-green/20 bg-black/30 p-4">
+      <div className="flex items-center justify-between border-b border-mx-green/10 pb-2">
+        <h4 className="text-2xs font-semibold uppercase tracking-[0.2em] text-mx-green/70">
           {title}
         </h4>
         <span className="font-mono text-xs uppercase text-mx-muted">{record.policyId}</span>
@@ -38,13 +38,13 @@ export function ReplayView({ result }: { result: ReplayResult }) {
         {changed ? (
           <>
             Decision changed:{' '}
-            <span className="font-bold uppercase text-[#7dffa0] mx-glow">
+            <span className="font-bold uppercase text-mx-green-bright mx-glow">
               {result.original.decision}
             </span>{' '}
             <span aria-hidden className="text-mx-muted">
               →
             </span>{' '}
-            <span className="font-bold uppercase text-[#ff9a9a] mx-glow-red">
+            <span className="font-bold uppercase text-mx-red-soft mx-glow-red">
               {result.replay.decision}
             </span>{' '}
             under the new policy.
@@ -52,7 +52,7 @@ export function ReplayView({ result }: { result: ReplayResult }) {
         ) : (
           <>
             Decision unchanged:{' '}
-            <span className="font-bold uppercase text-[#7dffa0] mx-glow">
+            <span className="font-bold uppercase text-mx-green-bright mx-glow">
               {result.replay.decision}
             </span>{' '}
             across both policies.

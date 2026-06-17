@@ -2,6 +2,7 @@
 
 import type { Policy } from '@nexus/contracts';
 import { useId, useState } from 'react';
+import { Button } from './Button';
 
 interface VerifierFormProps {
   policies: Policy[];
@@ -26,9 +27,9 @@ const SAMPLES: { label: string; prompt: string; policyId: string }[] = [
   },
 ];
 
-const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-green/80';
+const labelCls = 'block text-2xs font-semibold uppercase tracking-[0.2em] text-mx-green/80';
 const fieldCls =
-  'rounded-sm border border-[#00ff41]/30 bg-black/40 font-mono text-mx-text focus:border-[#00ff41] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41]';
+  'rounded-sm border border-mx-green/30 bg-black/40 font-mono text-mx-text focus:border-mx-green focus:outline-none focus-visible:ring-1 focus-visible:ring-mx-green';
 
 export function VerifierForm({ policies, pending, onSubmit }: VerifierFormProps) {
   const [prompt, setPrompt] = useState('');
@@ -53,9 +54,7 @@ export function VerifierForm({ policies, pending, onSubmit }: VerifierFormProps)
       className="mx-panel space-y-3 rounded-sm p-4"
       aria-label="Verify a prompt"
     >
-      <div className="text-[11px] uppercase tracking-[0.25em] text-mx-muted">
-        // screen a prompt
-      </div>
+      <div className="text-2xs uppercase tracking-[0.25em] text-mx-muted">// screen a prompt</div>
 
       <div>
         <label htmlFor={promptId} className={labelCls}>
@@ -64,7 +63,7 @@ export function VerifierForm({ policies, pending, onSubmit }: VerifierFormProps)
         <div className="relative mt-1.5">
           <span
             aria-hidden
-            className="pointer-events-none absolute left-3 top-3 text-[#00ff41] mx-glow"
+            className="pointer-events-none absolute left-3 top-3 text-mx-green mx-glow"
           >
             &gt;
           </span>
@@ -98,32 +97,32 @@ export function VerifierForm({ policies, pending, onSubmit }: VerifierFormProps)
           </select>
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={pending || !prompt.trim()}
-          className="rounded-sm border border-[#00ff41]/70 bg-[#00ff41]/10 px-5 py-2 text-sm font-bold uppercase tracking-[0.2em] text-[#7dffa0] mx-glow transition hover:bg-[#00ff41]/20 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41] disabled:cursor-not-allowed disabled:opacity-40"
+          className="px-5 py-2 text-sm tracking-[0.2em]"
         >
           <span aria-hidden>[ </span>
           {pending ? 'Verifying…' : 'Verify'}
           <span aria-hidden> ]</span>
-        </button>
+        </Button>
       </div>
 
       <fieldset className="flex flex-wrap gap-2">
-        <legend className="mb-1.5 w-full text-[11px] font-semibold uppercase tracking-[0.2em] text-mx-muted">
+        <legend className="mb-1.5 w-full text-2xs font-semibold uppercase tracking-[0.2em] text-mx-muted">
           Try a sample
         </legend>
         {SAMPLES.map((sample) => (
-          <button
+          <Button
             key={sample.label}
-            type="button"
+            variant="ghost"
             onClick={() => applySample(sample)}
-            className="rounded-sm border border-[#00ff41]/25 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-mx-text/80 transition hover:border-[#00ff41]/80 hover:text-[#7dffa0] hover:mx-glow focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff41]"
+            className="border-mx-green/25 px-2.5 py-1 text-2xs tracking-wider"
           >
             <span aria-hidden>[</span>
             {sample.label}
             <span aria-hidden>]</span>
-          </button>
+          </Button>
         ))}
       </fieldset>
     </form>
