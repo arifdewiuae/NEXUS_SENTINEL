@@ -4,6 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { resolveCorsOrigin } from './common/util/cors';
 import { AppConfigService } from './config/config.module';
 import { buildOpenApiDocument } from './swagger';
 
@@ -16,7 +17,7 @@ async function bootstrap(): Promise<void> {
 
   app.use(helmet());
   app.enableCors({
-    origin: config.get('CORS_ORIGINS'),
+    origin: resolveCorsOrigin(config.get('CORS_ORIGINS')),
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'x-api-key', 'x-request-id'],
   });
