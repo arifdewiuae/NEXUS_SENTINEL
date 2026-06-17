@@ -38,7 +38,7 @@ Full product design: `NEXUS_SENTINEL_DESIGN.md`.
 
 ```bash
 pnpm install                      # bootstrap workspace
-pnpm dev                          # API (:3000) + dashboard (:3001) together; override API_PORT/WEB_PORT
+pnpm dev                          # API (:5050) + dashboard (:5051) together; override API_PORT/WEB_PORT
 pnpm -r build                     # build all packages
 pnpm test                         # all unit tests
 pnpm --filter @nexus/api test:e2e # API e2e against fakes

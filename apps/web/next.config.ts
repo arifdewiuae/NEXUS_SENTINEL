@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // The dashboard is a pure client of the verifier API; no server secrets here.
   // The API base URL is injected at build time (App Runner URL in production).
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5050',
   },
 };
 

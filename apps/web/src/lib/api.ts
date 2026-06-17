@@ -10,7 +10,7 @@ import {
 } from '@nexus/contracts';
 import { z } from 'zod';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5050';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
 const policiesSchema = z.array(policySchema);

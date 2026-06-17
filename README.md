@@ -49,28 +49,28 @@ asserted, not aspirational.
 
 ```bash
 pnpm install
-pnpm dev          # API on :3000 + dashboard on :3001, one command (PROVIDER=fake)
+pnpm dev          # API on :5050 + dashboard on :5051, one command (PROVIDER=fake)
 ```
 
-`pnpm dev` runs both services with interleaved, labelled logs. If port 3000 (or 3001) is
+`pnpm dev` runs both services with interleaved, labelled logs. If port 5050 (or 5051) is
 taken, override them — the dashboard is pointed at the API automatically:
 
 ```bash
-API_PORT=3010 WEB_PORT=3011 pnpm dev
+API_PORT=5060 WEB_PORT=5061 pnpm dev
 ```
 
 You can also run them separately with `pnpm dev:api` / `pnpm dev:web`.
 
-Open <http://localhost:3001>, click a sample prompt, then **Replay** it under a different
+Open <http://localhost:5051>, click a sample prompt, then **Replay** it under a different
 policy. Or hit the API directly:
 
 ```bash
-curl -s -X POST localhost:3000/v1/verify \
+curl -s -X POST localhost:5050/v1/verify \
   -H 'content-type: application/json' \
   -d '{"prompt":"My SSN is 123-45-6789","policyId":"default"}' | jq
 ```
 
-API docs (Swagger) are served at <http://localhost:3000/docs>.
+API docs (Swagger) are served at <http://localhost:5050/docs>.
 
 ## Architecture
 
