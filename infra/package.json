@@ -1,0 +1,25 @@
+{
+  "name": "@nexus/infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nexus Sentinel infrastructure — AWS CDK (DynamoDB, Bedrock Guardrails, App Runner, CloudFront).",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "synth": "cdk synth --quiet",
+    "test": "vitest run",
+    "deploy": "cdk deploy --all",
+    "destroy": "cdk destroy --all"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "aws-cdk": "^2.170.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}

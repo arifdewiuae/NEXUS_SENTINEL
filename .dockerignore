@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.next
+**/out
+**/coverage
+**/cdk.out
+**/.git
+**/*.log
+**/.env
+**/.env.*
+!**/.env.example
+apps/web
+infra
