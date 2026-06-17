@@ -23,6 +23,13 @@ export const auditRecordSchema = z.object({
 });
 export type AuditRecord = z.infer<typeof auditRecordSchema>;
 
+/** Replay an audited prompt under a different policy. */
+export const replayRequestSchema = z.object({
+  requestId: z.string().min(1),
+  policyId: z.string().min(1),
+});
+export type ReplayRequest = z.infer<typeof replayRequestSchema>;
+
 /** Side-by-side result of replaying a prompt under a different policy. */
 export const replayResultSchema = z.object({
   original: auditRecordSchema,

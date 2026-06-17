@@ -3,11 +3,13 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AdaptersModule } from './adapters/adapters.module';
+import { AuditModule } from './audit/audit.module';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 import { ApiKeyGuard } from './common/guards/api-key.guard';
 import { AppConfigModule, AppConfigService } from './config/config.module';
 import { HealthModule } from './health/health.module';
 import { PolicyModule } from './policy/policy.module';
+import { ReplayModule } from './replay/replay.module';
 import { VerifyModule } from './verify/verify.module';
 
 @Module({
@@ -36,6 +38,8 @@ import { VerifyModule } from './verify/verify.module';
     AdaptersModule,
     PolicyModule,
     VerifyModule,
+    AuditModule,
+    ReplayModule,
     HealthModule,
   ],
   providers: [
