@@ -14,6 +14,8 @@ const original: AuditRecord = {
   recommendedAction: 'allow',
   scores: { pii: 0, secrets: 0, promptInjection: 0, topics: {}, content: {} },
   matches: [],
+  reason: 'No policy violations detected.',
+  advice: 'Safe to proceed.',
   latencyMs: { policy: 0, guardrail: 1, injection: 1, total: 2 },
 };
 

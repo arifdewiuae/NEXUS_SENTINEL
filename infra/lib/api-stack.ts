@@ -67,6 +67,8 @@ export class ApiStack extends Stack {
       }),
     );
 
+    // The port App Runner exposes and the app binds to — one literal, used twice below.
+    const containerPort = '3000';
     const env = (name: string, value: string) => ({ name, value });
     const haikuModel =
       (this.node.tryGetContext('haikuModelId') as string | undefined) ??
@@ -81,10 +83,10 @@ export class ApiStack extends Stack {
           imageIdentifier: imageUri,
           imageRepositoryType: 'ECR',
           imageConfiguration: {
-            port: '3000',
+            port: containerPort,
             runtimeEnvironmentVariables: [
               env('PROVIDER', 'aws'),
-              env('PORT', '3000'),
+              env('PORT', containerPort),
               env('AWS_REGION', this.region),
               env('AUDIT_TABLE_NAME', props.table.tableName),
               env('BEDROCK_HAIKU_MODEL_ID', haikuModel),

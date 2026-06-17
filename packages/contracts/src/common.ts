@@ -18,6 +18,20 @@ export const matchCategorySchema = z.enum([
 ]);
 export type MatchCategory = z.infer<typeof matchCategorySchema>;
 
+/**
+ * Canonical precedence of evidence categories, strongest cause first. This is
+ * the single source of truth for "which match is the *primary* reason" — the
+ * verdict aggregator emits matches in this order, and `explain()` walks it to
+ * pick the headline reason/advice. Change the order here, nowhere else.
+ */
+export const MATCH_PRECEDENCE = [
+  'secrets',
+  'pii',
+  'prompt_injection',
+  'topic',
+  'content',
+] as const satisfies readonly MatchCategory[];
+
 /** Where the prompt originated — used to tune thresholds. */
 export const promptContextSchema = z.enum(['user_input', 'system_message', 'rag_result']);
 export type PromptContext = z.infer<typeof promptContextSchema>;

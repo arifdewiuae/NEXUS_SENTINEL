@@ -18,8 +18,9 @@ export const auditRecordSchema = z.object({
   scores: scoresSchema,
   matches: z.array(matchSchema),
   redactedPrompt: z.string().optional(),
-  reason: z.string().optional(),
-  advice: z.string().optional(),
+  // Always populated from the verdict (`explain()` returns both for every decision).
+  reason: z.string(),
+  advice: z.string(),
   latencyMs: latencyBreakdownSchema,
   replayOf: z.string().optional(),
 });

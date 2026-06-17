@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { AppConfigService } from '../../config/config.module';
 import { ApiKeyGuard } from './api-key.guard';
 
-const ctx = (path: string, key?: string): ExecutionContext =>
+const ctx = (path: string, key?: string | string[]): ExecutionContext =>
   ({
     switchToHttp: () => ({
       getRequest: () => ({ path, headers: key ? { 'x-api-key': key } : {} }),
@@ -30,6 +30,12 @@ describe('ApiKeyGuard', () => {
   it('rejects a /v1 request with a missing or wrong key', () => {
     expect(() => guardWith('secret').canActivate(ctx('/v1/verify'))).toThrow(UnauthorizedException);
     expect(() => guardWith('secret').canActivate(ctx('/v1/verify', 'nope'))).toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it('rejects a repeated x-api-key header (array value)', () => {
+    expect(() => guardWith('secret').canActivate(ctx('/v1/verify', ['secret', 'secret']))).toThrow(
       UnauthorizedException,
     );
   });

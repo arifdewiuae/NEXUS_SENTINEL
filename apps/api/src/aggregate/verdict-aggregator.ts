@@ -30,6 +30,9 @@ const RECOMMENDED_ACTION: Record<Decision, RecommendedAction> = {
  * clock, no randomness. Each evidence source contributes block / redact / allow;
  * the final decision is the strongest contribution (`block > redact > allow`) —
  * i.e. a prompt need only fail one check to be stopped. See ADR-0002/0003.
+ *
+ * Matches are pushed in `MATCH_PRECEDENCE` order (secrets → pii → injection →
+ * topic → content); `explain()` relies on that order to pick the headline cause.
  */
 @Injectable()
 export class VerdictAggregator {

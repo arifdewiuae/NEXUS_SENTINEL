@@ -13,6 +13,9 @@ import { z } from 'zod';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5050';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
+/** Client-side ceiling per request — guards against a hung API leaving a spinner forever. */
+const REQUEST_TIMEOUT_MS = 10_000;
+
 const policiesSchema = z.array(policySchema);
 
 /**
@@ -41,18 +44,27 @@ async function request<T>(
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
   init?: RequestInit,
 ): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
       ...init,
+      signal: controller.signal,
       headers: {
         'content-type': 'application/json',
         ...(API_KEY ? { 'x-api-key': API_KEY } : {}),
         ...init?.headers,
       },
     });
-  } catch {
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new ApiError(0, 'Timed out', 'The verifier API did not respond in time.');
+    }
     throw new ApiError(0, 'Network error', 'The verifier API is unreachable.');
+  } finally {
+    clearTimeout(timer);
   }
 
   const raw: unknown = await res.json().catch(() => undefined);

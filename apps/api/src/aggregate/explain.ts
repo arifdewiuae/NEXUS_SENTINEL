@@ -1,10 +1,4 @@
-import type { Decision, Match, MatchCategory } from '@nexus/contracts';
-
-/**
- * Order in which a matched category is treated as the *primary* cause of a
- * non-allow decision — mirrors the aggregator's precedence (secrets first).
- */
-const PRECEDENCE: MatchCategory[] = ['secrets', 'pii', 'prompt_injection', 'topic', 'content'];
+import { MATCH_PRECEDENCE, type Decision, type Match, type MatchCategory } from '@nexus/contracts';
 
 const REASON: Record<MatchCategory, (type: string) => string> = {
   secrets: (t) => `A secret was detected (${t}).`,
@@ -32,7 +26,7 @@ export function explain(decision: Decision, matches: Match[]): { reason: string;
   if (decision === 'allow') {
     return { reason: 'No policy violations detected.', advice: 'Safe to proceed.' };
   }
-  const primary = PRECEDENCE.map((c) => matches.find((m) => m.category === c)).find(Boolean);
+  const primary = MATCH_PRECEDENCE.map((c) => matches.find((m) => m.category === c)).find(Boolean);
   if (!primary) {
     return {
       reason: 'The prompt violates the active policy.',
