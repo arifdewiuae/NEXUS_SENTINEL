@@ -6,3 +6,5 @@ allowBuilds:
   '@scarf/scarf': false
   '@swc/core': true
   esbuild: true
+  # The dashboard doesn't use next/image, so sharp's native build is unnecessary.
+  sharp: false

@@ -5,7 +5,7 @@ describe('validateEnv', () => {
   it('applies defaults for a minimal (fake) environment', () => {
     const env = validateEnv({});
     expect(env.PROVIDER).toBe('fake');
-    expect(env.PORT).toBe(3001);
+    expect(env.PORT).toBe(3000);
     expect(env.CORS_ORIGINS).toEqual(['*']);
     expect(env.RATE_LIMIT_LIMIT).toBe(60);
   });

@@ -2,6 +2,9 @@ node_modules
 dist
 build
 .next
+next-env.d.ts
+playwright-report
+test-results
 out
 coverage
 infra/cdk.out
