@@ -10,6 +10,8 @@ function makeVerdict(overrides: Partial<VerifyResponse> = {}): VerifyResponse {
     policyId: 'default',
     scores: { pii: 0, secrets: 0, promptInjection: 0, topics: {}, content: {} },
     matches: [],
+    reason: 'No policy violations detected.',
+    advice: 'Safe to proceed.',
     latencyMs: { policy: 0, guardrail: 5, injection: 5, total: 12 },
     requestId: 'req-1',
     ...overrides,

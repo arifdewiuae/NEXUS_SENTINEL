@@ -13,7 +13,7 @@ export function ScoreBar({ label, score, barClass = 'bg-[#00ff41]' }: ScoreBarPr
   const pct = Math.round(score * 100);
   return (
     <div className="flex items-center gap-2.5 text-sm">
-      <span className="w-28 shrink-0 truncate text-[11px] uppercase tracking-wider text-mx-muted">
+      <span className="w-32 shrink-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-mx-muted">
         {label}
       </span>
       <div

@@ -51,6 +51,8 @@ describe('contracts', () => {
       policyId: 'strict',
       scores: { pii: 1, secrets: 0, promptInjection: 0.87, topics: {}, content: {} },
       matches: [{ category: 'pii', type: 'EMAIL', confidence: 1 }],
+      reason: 'A secret was detected (AWS_ACCESS_KEY).',
+      advice: 'Remove the credential before sending.',
       latencyMs: { policy: 1, guardrail: 90, injection: 150, total: 250 },
       requestId: 'req-1',
     });

@@ -56,6 +56,10 @@ export const verifyResponseSchema = z.object({
   scores: scoresSchema,
   matches: z.array(matchSchema),
   redactedPrompt: z.string().optional(),
+  /** Plain-language explanation of why this decision was reached. */
+  reason: z.string(),
+  /** Actionable guidance for the caller on how to make the prompt pass. */
+  advice: z.string(),
   latencyMs: latencyBreakdownSchema,
   requestId: z.string(),
 });
@@ -67,5 +71,5 @@ export type VerifyResponse = z.infer<typeof verifyResponseSchema>;
  */
 export type Verdict = Pick<
   VerifyResponse,
-  'decision' | 'recommendedAction' | 'scores' | 'matches' | 'redactedPrompt'
+  'decision' | 'recommendedAction' | 'scores' | 'matches' | 'redactedPrompt' | 'reason' | 'advice'
 >;

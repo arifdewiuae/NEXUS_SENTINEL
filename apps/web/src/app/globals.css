@@ -34,6 +34,57 @@ body {
   color: #eaffef;
 }
 
+/* Tailwind v4 preflight sets buttons to the default cursor; restore pointer. */
+button:not(:disabled),
+select:not(:disabled),
+[role='button'] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Customizable native <select> (Chromium 135+). The control stays a real
+   <select> — native a11y + keyboard, and Playwright `selectOption` still works —
+   while we theme the picker + options to match the terminal. Non-supporting
+   browsers ignore `base-select` and fall back to the native control. */
+select,
+::picker(select) {
+  appearance: base-select;
+}
+::picker(select) {
+  margin-top: 4px;
+  border: 1px solid rgba(0, 255, 65, 0.5);
+  border-radius: 2px;
+  background: rgba(5, 8, 5, 0.96);
+  box-shadow: 0 0 18px rgba(0, 255, 65, 0.18);
+}
+select option {
+  padding: 6px 12px;
+  background: transparent;
+  color: rgba(182, 245, 200, 0.85);
+  font-family: var(--font-mono);
+}
+select option:hover {
+  background: rgba(0, 255, 65, 0.15);
+}
+select option:checked {
+  color: #7dffa0;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.7);
+}
+select option::checkmark {
+  content: '▸';
+  margin-right: 6px;
+  color: #00ff41;
+}
+select::picker-icon {
+  color: #00ff41;
+  transition: transform 0.2s ease;
+}
+select:open::picker-icon {
+  transform: rotate(180deg);
+}
+
 /* Phosphor glow helpers ----------------------------------------------------- */
 .mx-glow {
   text-shadow: 0 0 6px rgba(0, 255, 65, 0.7);

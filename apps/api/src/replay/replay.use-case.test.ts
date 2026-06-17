@@ -30,6 +30,8 @@ const replayResponse: VerifyResponse = {
     content: {},
   },
   matches: [{ category: 'topic', type: 'medical_diagnosis', confidence: 0.92 }],
+  reason: 'The prompt requests a denied topic (medical_diagnosis).',
+  advice: 'Rephrase to avoid this topic, or screen under a policy that permits it.',
   latencyMs: { policy: 0, guardrail: 1, injection: 1, total: 2 },
 };
 

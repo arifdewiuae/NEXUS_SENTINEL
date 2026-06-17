@@ -9,6 +9,7 @@ import {
   type RecommendedAction,
   type Verdict,
 } from '@nexus/contracts';
+import { explain } from './explain';
 import { applyRedaction, buildScores, spanOf } from './score-mapping';
 
 export interface AggregateInput {
@@ -127,12 +128,16 @@ export class VerdictAggregator {
     const redactedPrompt =
       decision === 'redact' ? applyRedaction(prompt, guardrail, policy.redactionStyle) : undefined;
 
+    const { reason, advice } = explain(decision, matches);
+
     return {
       decision,
       recommendedAction: RECOMMENDED_ACTION[decision],
       scores,
       matches,
       redactedPrompt,
+      reason,
+      advice,
     };
   }
 }

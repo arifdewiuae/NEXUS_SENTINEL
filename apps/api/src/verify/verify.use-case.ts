@@ -86,6 +86,8 @@ export class VerifyUseCase {
       scores: verdict.scores,
       matches: verdict.matches,
       redactedPrompt: verdict.redactedPrompt,
+      reason: verdict.reason,
+      advice: verdict.advice,
       latencyMs,
       replayOf: opts.replayOf,
     };

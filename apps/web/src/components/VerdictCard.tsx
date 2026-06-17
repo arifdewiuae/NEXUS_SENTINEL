@@ -21,7 +21,16 @@ const sectionLabel = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-
 
 /** The hero result panel: decision, recommended action, scores, evidence. */
 export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
-  const { decision, recommendedAction, scores, matches, redactedPrompt, latencyMs } = verdict;
+  const {
+    decision,
+    recommendedAction,
+    scores,
+    matches,
+    redactedPrompt,
+    reason,
+    advice,
+    latencyMs,
+  } = verdict;
   const style = DECISION_STYLE[decision];
 
   const topics = Object.entries(scores.topics);
@@ -41,6 +50,13 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
         </div>
         <span className="font-mono text-xs text-mx-muted">{latencyMs.total} ms</span>
       </header>
+
+      <p className="mt-3 font-mono text-sm text-mx-text/80" data-testid="verdict-reason">
+        <span aria-hidden className="text-mx-green">
+          ▸{' '}
+        </span>
+        {reason}
+      </p>
 
       <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
         <ScoreBar label="PII" score={scores.pii} barClass={style.bar} />
@@ -77,6 +93,18 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
           <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-sm border border-[#00ff41]/20 bg-black/40 p-3 text-sm text-[#7dffa0]">
             {redactedPrompt}
           </pre>
+        </div>
+      )}
+
+      {decision !== 'allow' && (
+        <div
+          data-testid="verdict-advice"
+          className="mt-4 rounded-sm border border-[#ffb000]/40 bg-[#ffb000]/5 px-3 py-2 font-mono text-sm text-[#ffd07a]"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ffb000]/80">
+            ▸ Fix
+          </span>{' '}
+          {advice}
         </div>
       )}
     </section>

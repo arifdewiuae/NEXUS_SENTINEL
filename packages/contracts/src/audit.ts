@@ -18,6 +18,8 @@ export const auditRecordSchema = z.object({
   scores: scoresSchema,
   matches: z.array(matchSchema),
   redactedPrompt: z.string().optional(),
+  reason: z.string().optional(),
+  advice: z.string().optional(),
   latencyMs: latencyBreakdownSchema,
   replayOf: z.string().optional(),
 });

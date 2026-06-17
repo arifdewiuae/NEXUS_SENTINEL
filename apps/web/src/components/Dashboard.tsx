@@ -36,6 +36,9 @@ export function Dashboard() {
   const handleVerify = async (prompt: string, policyId: string) => {
     setPending(true);
     setError(null);
+    // A new request renews the view: clear any open replay comparison.
+    setReplayTarget(null);
+    setReplayResult(null);
     try {
       const res = await api.verify({ prompt, policyId });
       setVerdict(res);
@@ -69,8 +72,8 @@ export function Dashboard() {
   };
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-      <div className="space-y-4">
+    <div className="grid items-start gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <div className="min-w-0 space-y-4">
         <VerifierForm
           policies={policies}
           pending={pending}
@@ -133,7 +136,7 @@ export function Dashboard() {
         )}
       </div>
 
-      <aside className="space-y-3">
+      <aside className="min-w-0 space-y-3">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-mx-green/70">
           ▸ Activity log
         </h2>
