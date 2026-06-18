@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateEnv } from './config.schema';
+import { collectGuardrailBindings, validateEnv } from './config.schema';
 
 describe('validateEnv', () => {
   it('applies defaults for a minimal (fake) environment', () => {
@@ -32,5 +32,34 @@ describe('validateEnv', () => {
 
   it('rejects an invalid PORT', () => {
     expect(() => validateEnv({ PORT: 'not-a-number' })).toThrow(/Invalid environment/);
+  });
+
+  it('collects guardrail bindings into the validated config', () => {
+    const env = validateEnv({
+      GUARDRAIL_STRICT_ID: 'gr-1',
+      GUARDRAIL_STRICT_VERSION: '3',
+    });
+    expect(env.guardrailBindings).toEqual({ strict: { id: 'gr-1', version: '3' } });
+  });
+});
+
+describe('collectGuardrailBindings', () => {
+  it('keeps a binding only when both id and version are present', () => {
+    const bindings = collectGuardrailBindings({
+      GUARDRAIL_STRICT_ID: 'gr-1',
+      GUARDRAIL_STRICT_VERSION: '3',
+      GUARDRAIL_DEFAULT_ID: 'gr-2', // no matching _VERSION → dropped
+      GUARDRAIL_PERMISSIVE_VERSION: '5', // no matching _ID → dropped
+    });
+    expect(bindings).toEqual({ strict: { id: 'gr-1', version: '3' } });
+  });
+
+  it('lowercases the policy key and ignores unrelated env', () => {
+    const bindings = collectGuardrailBindings({
+      GUARDRAIL_DEFAULT_ID: 'gr-2',
+      GUARDRAIL_DEFAULT_VERSION: '1',
+      AWS_REGION: 'us-east-1',
+    });
+    expect(bindings).toEqual({ default: { id: 'gr-2', version: '1' } });
   });
 });

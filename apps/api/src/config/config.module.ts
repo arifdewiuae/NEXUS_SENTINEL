@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
-import { type Env, validateEnv } from './config.schema';
+import { type Env, type GuardrailBinding, validateEnv } from './config.schema';
 
 /**
  * Typed config access. `AppConfigService` wraps Nest's `ConfigService` so the
@@ -15,6 +15,14 @@ export class AppConfigService {
 
   get isAws(): boolean {
     return this.get('PROVIDER') === 'aws';
+  }
+
+  /**
+   * The deploy-time guardrail binding for a policy, or `undefined` when none was
+   * supplied (e.g. local/fake runs, which fall back to the policy file values).
+   */
+  guardrailBinding(policyId: string): GuardrailBinding | undefined {
+    return this.get('guardrailBindings')[policyId.toLowerCase()];
   }
 }
 

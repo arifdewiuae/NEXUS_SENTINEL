@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { type Policy, policySchema } from '@nexus/contracts';
+import { AppConfigService } from '../config/config.module';
 import { PolicyNotFoundError } from '../common/errors/domain-errors';
 import defaultPolicy from './policies/default.json';
 import permissivePolicy from './policies/permissive.json';
@@ -17,7 +18,7 @@ export class PolicyService {
   private readonly logger = new Logger(PolicyService.name);
   private readonly policies = new Map<string, Policy>();
 
-  constructor() {
+  constructor(private readonly config: AppConfigService) {
     for (const raw of RAW_POLICIES) {
       const policy = this.overlayGuardrail(policySchema.parse(raw));
       this.policies.set(policy.id, policy);
@@ -30,15 +31,14 @@ export class PolicyService {
   /**
    * The bundled policy files carry placeholder guardrail ids. When the real
    * guardrails are provisioned (CDK), their ids/versions arrive as env vars
-   * (`GUARDRAIL_<POLICY_ID>_ID` / `_VERSION`) and are overlaid here, so the
-   * source of truth stays the file while deployment supplies the live binding.
+   * (`GUARDRAIL_<POLICY_ID>_ID` / `_VERSION`), validated and exposed through the
+   * config boundary as a binding, and overlaid here — so the source of truth
+   * stays the file while deployment supplies the live binding.
    */
   private overlayGuardrail(policy: Policy): Policy {
-    const key = policy.id.toUpperCase();
-    const guardrailId = process.env[`GUARDRAIL_${key}_ID`];
-    const guardrailVersion = process.env[`GUARDRAIL_${key}_VERSION`];
-    if (!guardrailId || !guardrailVersion) return policy;
-    return { ...policy, guardrailId, guardrailVersion };
+    const binding = this.config.guardrailBinding(policy.id);
+    if (!binding) return policy;
+    return { ...policy, guardrailId: binding.id, guardrailVersion: binding.version };
   }
 
   /** Resolve a policy by id, throwing `PolicyNotFoundError` if unknown. */

@@ -60,7 +60,40 @@ export const envSchema = z
     }
   });
 
-export type Env = z.infer<typeof envSchema>;
+/** A per-policy guardrail binding supplied at deploy time. */
+export interface GuardrailBinding {
+  id: string;
+  version: string;
+}
+
+/**
+ * The env schema captures a fixed set of keys; guardrail bindings are dynamic —
+ * one `GUARDRAIL_<POLICY>_ID` / `_VERSION` pair per policy id. We collect them
+ * into a validated, typed map here so the rest of the app reads them through the
+ * config boundary instead of reaching into `process.env`. A binding is kept only
+ * when both id and version are present (an incomplete pair is ignored, matching
+ * the old overlay behaviour).
+ */
+export type Env = z.infer<typeof envSchema> & {
+  guardrailBindings: Record<string, GuardrailBinding>;
+};
+
+const GUARDRAIL_ID_KEY = /^GUARDRAIL_(.+)_ID$/;
+
+export function collectGuardrailBindings(
+  raw: Record<string, unknown>,
+): Record<string, GuardrailBinding> {
+  const bindings: Record<string, GuardrailBinding> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    const match = GUARDRAIL_ID_KEY.exec(key);
+    const policy = match?.[1];
+    if (!policy || typeof value !== 'string' || !value) continue;
+    const version = raw[`GUARDRAIL_${policy}_VERSION`];
+    if (typeof version !== 'string' || !version) continue;
+    bindings[policy.toLowerCase()] = { id: value, version };
+  }
+  return bindings;
+}
 
 /** Validates `process.env`-style input; throws a readable error on failure. */
 export function validateEnv(raw: Record<string, unknown>): Env {
@@ -71,5 +104,5 @@ export function validateEnv(raw: Record<string, unknown>): Env {
       .join('\n');
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
-  return result.data;
+  return { ...result.data, guardrailBindings: collectGuardrailBindings(raw) };
 }

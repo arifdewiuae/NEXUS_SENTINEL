@@ -43,7 +43,7 @@ export default tseslint.config(
   {
     // Tests exercise HTTP bodies (supertest) and DI internals that are typed
     // `any` at the boundary; the type-aware unsafe-* rules add noise here.
-    files: ['**/*.test.ts', '**/*.e2e-spec.ts', '**/test/**/*.ts'],
+    files: ['**/*.test.{ts,tsx}', '**/*.e2e-spec.ts', '**/test/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
