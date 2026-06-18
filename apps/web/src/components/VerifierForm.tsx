@@ -80,7 +80,7 @@ export function VerifierForm({ policies, pending, onSubmit }: VerifierFormProps)
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
             placeholder="paste a prompt to screen…"
-            className={`w-full resize-none p-3 pl-7 text-sm placeholder:text-mx-muted/60 ${fieldCls}`}
+            className={`w-full resize-none p-3 pl-7 text-sm placeholder:text-mx-muted/80 ${fieldCls}`}
           />
         </div>
       </div>

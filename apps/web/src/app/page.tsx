@@ -15,7 +15,7 @@ export default function Home() {
               nexus@sentinel:~$ ./verify
             </span>
           </div>
-          <p className="text-xs text-mx-text/60">
+          <p className="text-xs text-mx-text/80">
             prompt firewall · <span className="text-mx-green-bright">allow</span> ·{' '}
             <span className="text-mx-amber-soft">redact</span> ·{' '}
             <span className="text-mx-red-soft">block</span> · replay

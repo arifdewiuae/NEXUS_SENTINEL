@@ -9,8 +9,8 @@
   --color-mx-green-deep: #0a3d1a;
   --color-mx-green-bright: #7dffa0;
   --color-mx-gauge: #06210f;
-  --color-mx-text: #b6f5c8;
-  --color-mx-muted: #4f8c63;
+  --color-mx-text: #c8f8d6;
+  --color-mx-muted: #84c29c;
   --color-mx-amber: #ffb000;
   --color-mx-amber-soft: #ffd07a;
   --color-mx-red: #ff4d4d;
@@ -106,8 +106,8 @@ select:open::picker-icon {
 /* A bracketed terminal panel: translucent so the rain bleeds through faintly. */
 .mx-panel {
   position: relative;
-  background: rgba(5, 14, 6, 0.72);
-  border: 1px solid rgba(0, 255, 65, 0.28);
+  background: rgba(6, 17, 9, 0.92);
+  border: 1px solid rgba(0, 255, 65, 0.32);
   box-shadow:
     0 0 0 1px rgba(0, 255, 65, 0.04),
     0 0 18px rgba(0, 255, 65, 0.08),
