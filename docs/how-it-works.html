@@ -1005,7 +1005,7 @@
         guardrail:
           "<strong>Guardrail (primary).</strong> AWS Bedrock Guardrails screens for PII, secrets, denied topics and content filters (hate, violence, sexual, misconduct, prompt-attack). Fails <span class='red'>closed</span> — a guardrail outage rejects the request.",
         injection:
-          "<strong>Injection screener (secondary).</strong> A Claude Haiku call (forced tool-use, schema-validated) classifies injection / jailbreak attempts and grades denied topics for display. Fails <span class='glow'>open</span> — degrades to 'skipped' on error.",
+          "<strong>Injection screener (secondary, tiered).</strong> A cheap deterministic pre-screen runs on every prompt; only the ambiguous middle — a borderline signal, or a prompt the sanitizer had to de-obfuscate — <em>escalates</em> to a Claude Haiku call (forced tool-use, schema-validated) that classifies injection / jailbreak and grades denied topics. Fails <span class='glow'>open</span> — degrades to 'skipped' on error.",
         aggregate:
           '<strong>Aggregate.</strong> A pure function combines both reports: each piece of evidence contributes block / redact / allow, ordered by precedence. 100% branch-tested.',
         verdict:

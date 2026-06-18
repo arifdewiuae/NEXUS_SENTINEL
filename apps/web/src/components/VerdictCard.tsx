@@ -30,6 +30,7 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
     redactedPrompt,
     reason,
     advice,
+    escalated,
     latencyMs,
   } = verdict;
   const style = DECISION_STYLE[decision];
@@ -49,7 +50,21 @@ export function VerdictCard({ verdict }: { verdict: VerifyResponse }) {
           <DecisionBadge decision={decision} />
           <span className="text-sm text-mx-text/60">{ACTION_LABEL[recommendedAction]}</span>
         </div>
-        <span className="font-mono text-xs text-mx-muted">{latencyMs.total} ms</span>
+        <div className="flex items-center gap-3 font-mono text-xs text-mx-muted">
+          {escalated !== undefined && (
+            <span
+              data-testid="screening-tier"
+              title={
+                escalated
+                  ? 'The deterministic pre-screen was inconclusive, so the prompt was escalated to the Haiku model.'
+                  : 'Resolved by the cheap deterministic pre-screen — no model call.'
+              }
+            >
+              {escalated ? '⇡ escalated → Haiku' : '⚡ deterministic'}
+            </span>
+          )}
+          <span>{latencyMs.total} ms</span>
+        </div>
       </header>
 
       <p className="mt-3 font-mono text-sm text-mx-text/80" data-testid="verdict-reason">

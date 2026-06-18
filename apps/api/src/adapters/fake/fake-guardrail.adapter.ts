@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { ConfidenceLevel, ContentDetection, GuardrailResult, Policy } from '@nexus/contracts';
 import type { GuardrailPort } from '../../common/ports/ports';
-import { detectInjection, detectPii, detectSecrets, detectTopics } from './detection-patterns';
+import { detectPii, detectSecrets } from './detection-patterns';
+import { detectInjection, detectTopics } from '../../screening/heuristics';
 
 const BASELINE_CONTENT_FILTERS = ['HATE', 'INSULTS', 'SEXUAL', 'VIOLENCE', 'MISCONDUCT'] as const;
 

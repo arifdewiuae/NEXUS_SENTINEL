@@ -1,39 +1,30 @@
 import { ConverseCommand, type BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { InjectionResult, Policy } from '@nexus/contracts';
+import { Inject, Injectable } from '@nestjs/common';
+import type { InjectionVerdict, Policy } from '@nexus/contracts';
 import { AppConfigService } from '../../config/config.module';
-import type { InjectionPort } from '../../common/ports/ports';
+import { EscalatingInjectionScreener } from '../../screening/escalating-injection-screener';
 import { BEDROCK_CLIENT } from './bedrock-client.factory';
 import { buildSystemPrompt, buildToolConfig, extractVerdict } from './injection-screener';
 
-const SKIPPED: InjectionResult = {
-  detected: false,
-  confidence: 0,
-  indicators: [],
-  topicScores: {},
-  skipped: true,
-  latencyMs: 0,
-};
-
 /**
- * Real injection screener backed by Claude Haiku via Bedrock Converse. Tries the
- * primary model, then an optional fallback (e.g. Haiku 4.5 → 3.5) before giving
- * up — at which point the use case fails open. Token usage is logged per call
- * for cost instrumentation. See ADR-0004.
+ * Real injection screener backed by Claude Haiku via Bedrock Converse — the
+ * *expensive tier* of {@link EscalatingInjectionScreener}. It is only invoked
+ * when the cheap deterministic pre-screen is inconclusive (see ADR-0004). Tries
+ * the primary model, then an optional fallback (e.g. Haiku 4.5 → 3.5) before
+ * giving up — at which point the use case fails open. Token usage is logged.
  */
 @Injectable()
-export class BedrockInjectionAdapter implements InjectionPort {
-  private readonly logger = new Logger(BedrockInjectionAdapter.name);
+export class BedrockInjectionAdapter extends EscalatingInjectionScreener {
   private readonly toolConfig = buildToolConfig();
 
   constructor(
     @Inject(BEDROCK_CLIENT) private readonly client: BedrockRuntimeClient,
     private readonly config: AppConfigService,
-  ) {}
+  ) {
+    super();
+  }
 
-  async classify(prompt: string, policy: Policy): Promise<InjectionResult> {
-    if (policy.promptInjection.mode === 'off') return SKIPPED;
-
+  protected async escalate(prompt: string, policy: Policy): Promise<InjectionVerdict> {
     const models = [
       this.config.get('BEDROCK_HAIKU_MODEL_ID'),
       this.config.get('BEDROCK_HAIKU_FALLBACK_MODEL_ID'),
@@ -61,7 +52,7 @@ export class BedrockInjectionAdapter implements InjectionPort {
           `injection screen: model=${modelId} detected=${verdict.detected} ` +
             `inTok=${output.usage?.inputTokens ?? 0} outTok=${output.usage?.outputTokens ?? 0} ${latencyMs}ms`,
         );
-        return { ...verdict, skipped: false, latencyMs };
+        return verdict;
       } catch (err) {
         lastError = err;
         this.logger.warn(`injection model ${modelId} failed: ${String(err)}`);

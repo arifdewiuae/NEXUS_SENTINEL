@@ -22,6 +22,12 @@ export type InjectionVerdict = z.infer<typeof injectionVerdictSchema>;
 export const injectionResultSchema = injectionVerdictSchema.extend({
   /** True when the screener was skipped (policy mode `off`) or failed open. */
   skipped: z.boolean().default(false),
+  /**
+   * True when the verdict came from the expensive model (Haiku) rather than the
+   * cheap deterministic pre-screen — the tiered-defense signal. Omitted when the
+   * screener didn't run.
+   */
+  escalated: z.boolean().optional(),
   latencyMs: z.number().nonnegative(),
 });
 export type InjectionResult = z.infer<typeof injectionResultSchema>;

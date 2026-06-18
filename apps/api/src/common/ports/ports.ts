@@ -10,9 +10,15 @@ export interface GuardrailPort {
   apply(prompt: string, policy: Policy): Promise<GuardrailResult>;
 }
 
+/** Side context the screener can use to decide whether to escalate to the LLM. */
+export interface InjectionContext {
+  /** The sanitizer found hidden/disguised characters in the original prompt. */
+  obfuscated?: boolean;
+}
+
 export interface InjectionPort {
   /** Screen a prompt for injection + grade the policy's denied topics. */
-  classify(prompt: string, policy: Policy): Promise<InjectionResult>;
+  classify(prompt: string, policy: Policy, context?: InjectionContext): Promise<InjectionResult>;
 }
 
 export interface AuditRepository {

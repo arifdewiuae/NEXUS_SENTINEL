@@ -103,23 +103,22 @@ denied topic to `TOPIC_DEFINITIONS` + the relevant policy then. Explained for us
 `docs/how-it-works.html` §05 (the offline simulator deliberately shows `allow` to make the
 pattern-matching limitation visible).
 
-### B2 ☐ LLM escalation tier
+### B2 ☑ LLM escalation tier — DONE
 
-Today `BedrockInjectionAdapter` fires Haiku on every prompt. Make it an **escalation**: cheap
-deterministic checks first; call Haiku only when the result is **ambiguous** (e.g. weak/no
-deterministic signal **but** obfuscation present, or a borderline confidence band).
-
-- **Build:** an `escalate(signal, sanitization, policy): boolean` policy in the injection path.
-  Deterministic-clear cases (obvious hit, or clean + no obfuscation) skip the LLM; the
-  ambiguous middle escalates.
-- **Keep:** the existing primary→fallback model retry, token logging, fail-open semantics, and
-  forced tool-use structured output. Escalation wraps these; it doesn't replace them.
-- **Observability:** log `escalated=true/false` + reason so the demo can show _why_ a prompt
-  did or didn't spend a token.
-- **Trade-off to name:** escalation trades a little added branching/latency reasoning for cost
-  savings. For a demo it's primarily an _architecture_ story (tiered defense), not a cost one.
-- **Note:** `FakeInjectionAdapter` must mirror the same escalation decision so offline/CI demo
-  behaves like `aws` mode (deterministically).
+- **Done:** moved the deterministic injection/topic heuristics out of `adapters/fake/` into a
+  shared `screening/heuristics.ts` (the cheap tier). Added a pure `screening/escalation.ts`
+  (`shouldEscalate(signal, obfuscated, policy)`) and an abstract `EscalatingInjectionScreener`
+  base that runs the pre-screen and only calls the expensive tier when inconclusive. Both
+  `FakeInjectionAdapter` and `BedrockInjectionAdapter` now extend it — so the escalation
+  **decision** is identical in `fake` and `aws` mode (only the work behind it differs).
+- **Decision rule:** obfuscation → escalate; clean + no signal → skip; high-confidence hit
+  (≥ 0.85) → skip; borderline → escalate. Logged as `escalated` + reason.
+- **Surfaced:** `escalated` added to `InjectionResult` + the verify response + a small VerdictCard
+  indicator (`⚡ deterministic` / `⇡ escalated → Haiku`). OpenAPI regenerated.
+- **Trade-off named:** a paraphrase the cheap tier misses on otherwise-clean text won't reach the
+  LLM — escalation trades a little recall for cost.
+- **Tests:** `escalation.test.ts`, reworked `bedrock-injection.adapter.test.ts` (both tiers),
+  fakes still green. api 111 unit + 18 e2e; `aggregate/**` + `screening/**` at 100% coverage.
 
 ### B3 ☐ Demo sample prompts
 

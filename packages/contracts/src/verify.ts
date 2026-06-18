@@ -60,6 +60,12 @@ export const verifyResponseSchema = z.object({
   reason: z.string(),
   /** Actionable guidance for the caller on how to make the prompt pass. */
   advice: z.string(),
+  /**
+   * True when the injection screener escalated to the LLM tier for this request,
+   * false when the cheap deterministic pre-screen settled it. Omitted when the
+   * screener didn't run (policy mode `off`).
+   */
+  escalated: z.boolean().optional(),
   latencyMs: latencyBreakdownSchema,
   requestId: z.string(),
 });

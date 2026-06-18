@@ -18,6 +18,7 @@ import {
   INJECTION_PORT,
   type AuditRepository,
   type GuardrailPort,
+  type InjectionContext,
   type InjectionPort,
 } from '../common/ports/ports';
 import { withTimeout } from '../common/util/with-timeout';
@@ -29,6 +30,7 @@ const SKIPPED_INJECTION: InjectionResult = {
   indicators: [],
   topicScores: {},
   skipped: true,
+  escalated: false,
   latencyMs: 0,
 };
 
@@ -66,7 +68,7 @@ export class VerifyUseCase {
 
     const [guardrail, injection] = await Promise.all([
       this.runGuardrail(sanitized.normalized, policy),
-      this.runInjection(sanitized.normalized, policy),
+      this.runInjection(sanitized.normalized, policy, { obfuscated: sanitized.obfuscated }),
     ]);
 
     const verdict = this.aggregator.combine({
@@ -84,7 +86,13 @@ export class VerifyUseCase {
       total: Math.round(performance.now() - started),
     };
 
-    const response: VerifyResponse = { ...verdict, policyId: policy.id, requestId, latencyMs };
+    const response: VerifyResponse = {
+      ...verdict,
+      policyId: policy.id,
+      requestId,
+      escalated: injection?.escalated,
+      latencyMs,
+    };
 
     const record: AuditRecord = {
       requestId,
@@ -123,11 +131,15 @@ export class VerifyUseCase {
   }
 
   /** Injection is a secondary signal → fail open (degrade to skipped). */
-  private async runInjection(prompt: string, policy: Policy): Promise<InjectionResult | null> {
+  private async runInjection(
+    prompt: string,
+    policy: Policy,
+    context: InjectionContext,
+  ): Promise<InjectionResult | null> {
     if (policy.promptInjection.mode === 'off') return null;
     try {
       return await withTimeout(
-        this.injection.classify(prompt, policy),
+        this.injection.classify(prompt, policy, context),
         this.config.get('INJECTION_TIMEOUT_MS'),
         () => new Error('injection timeout'),
       );

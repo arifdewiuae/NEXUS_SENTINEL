@@ -142,7 +142,8 @@
                               "secrets",
                               "prompt_injection",
                               "topic",
-                              "content"
+                              "content",
+                              "obfuscation"
                             ]
                           },
                           "type": {
@@ -183,6 +184,15 @@
                     "redactedPrompt": {
                       "type": "string"
                     },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "advice": {
+                      "type": "string"
+                    },
+                    "escalated": {
+                      "type": "boolean"
+                    },
                     "latencyMs": {
                       "type": "object",
                       "properties": {
@@ -221,6 +231,8 @@
                     "policyId",
                     "scores",
                     "matches",
+                    "reason",
+                    "advice",
                     "latencyMs",
                     "requestId"
                   ],
