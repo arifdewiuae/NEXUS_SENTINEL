@@ -17,6 +17,7 @@ export default tseslint.config(
       '**/.next/**',
       '**/next-env.d.ts',
       '**/*.config.{js,mjs,cjs,ts}',
+      'apps/web/scripts/**', // one-off doc helpers (e.g. screenshot capture), not app code
       '**/node_modules/**',
     ],
   },
