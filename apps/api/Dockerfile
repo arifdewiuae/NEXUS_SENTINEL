@@ -15,7 +15,7 @@ COPY packages/contracts ./packages/contracts
 COPY apps/api ./apps/api
 RUN pnpm --filter @nexus/contracts build \
   && pnpm --filter @nexus/api build \
-  && pnpm --filter @nexus/api deploy --prod /out
+  && pnpm --filter @nexus/api deploy --legacy --prod /out
 
 FROM node:22-slim AS runtime
 WORKDIR /app
