@@ -15,8 +15,8 @@ const csv = (value: string): string[] =>
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    // Default is the local-dev port; both `pnpm dev` and the deploy (App Runner,
-    // PORT=3000) set this explicitly, so the default only applies to a bare run.
+    // Default is the local-dev port; both `pnpm dev` and the deploy (the container
+    // sets PORT=3000) set this explicitly, so the default only applies to a bare run.
     PORT: z.coerce.number().int().positive().default(5050),
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])

@@ -55,11 +55,21 @@ describe('infrastructure', () => {
     expect(withTopics).toHaveLength(1);
   });
 
-  it('runs the API on App Runner with a least-privilege Bedrock policy', () => {
-    t.api.resourceCountIs('AWS::AppRunner::Service', 1);
+  it('runs the API on Lambda behind API Gateway with a least-privilege Bedrock policy', () => {
+    t.api.resourceCountIs('AWS::Lambda::Function', 1);
+    t.api.resourceCountIs('AWS::ApiGatewayV2::Api', 1);
     t.api.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: Match.objectLike({
         Statement: Match.arrayWith([Match.objectLike({ Action: 'bedrock:ApplyGuardrail' })]),
+      }),
+    });
+  });
+
+  it('throttles the API Gateway stage at the edge (rate limiting before compute)', () => {
+    t.api.hasResourceProperties('AWS::ApiGatewayV2::Stage', {
+      DefaultRouteSettings: Match.objectLike({
+        ThrottlingRateLimit: 20,
+        ThrottlingBurstLimit: 40,
       }),
     });
   });

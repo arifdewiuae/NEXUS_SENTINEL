@@ -1,13 +1,26 @@
 # Onboarding: enable AWS Bedrock and deploy live
 
 Nexus Sentinel runs fully offline by default (`PROVIDER=fake`). This guide switches it to
-the live AWS runtime: Bedrock Guardrails + Claude Haiku + DynamoDB on App Runner, with the
-dashboard on CloudFront. You only need this to run against real Bedrock — every test and
-the local demo work without any of it.
+the live AWS runtime: Bedrock Guardrails + Claude Haiku + DynamoDB, with the API on
+**Lambda + API Gateway** and the dashboard on CloudFront ([ADR-0005](adr/0005-lambda-api-gateway-over-app-runner.md)).
+You only need this to run against real Bedrock — every test and the local demo work without
+any of it.
 
-> **Cost note:** App Runner, DynamoDB (on-demand), Bedrock calls, and CloudFront all bill
-> while running. Set an AWS Budgets alarm, and run `pnpm --filter @nexus/infra destroy`
-> when you're done.
+> **Tip — deploy on fakes first.** You can deploy the whole stack with `provider=fake` (the
+> default) for a live public URL with **no Bedrock dependency**, then flip to `provider=aws`
+> once Bedrock quota is granted. Pass `-c provider=aws` on the API deploy to switch.
+
+> **Cost note:** Lambda + API Gateway scale to zero (free tier covers demo volume); DynamoDB
+> (on-demand), Bedrock calls, and CloudFront bill per use. Set an AWS Budgets alarm, and run
+> `pnpm --filter @nexus/infra destroy` when you're done.
+
+> **Bedrock quota gotcha (new accounts).** Model _access_ (Marketplace subscription) is
+> separate from _throughput quota_. A fresh account often shows **0 TPM / 0 RPM** for every
+> model in Service Quotas → Bedrock, so live calls throttle with `ThrottlingException: Too
+many tokens per day` even on the first request. Request an increase on _Claude Haiku 4.5
+> (cross-region, on-demand)_. Until it lands, deploy with `provider=fake`. (Also: the
+> `bedrock-mantle` console — "Claude Platform on AWS" — is a _different_ product with separate
+> gating; this project uses classic Bedrock `bedrock-runtime`, not Mantle.)
 
 ## Prerequisites
 

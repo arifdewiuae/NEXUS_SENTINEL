@@ -14,7 +14,7 @@ const SPA_FALLBACK: ErrorResponse[] = [
  * Hosts the static dashboard export from a private S3 bucket behind CloudFront
  * (origin access control). The build artifacts are uploaded by the deploy flow
  * (`aws s3 sync`), so `cdk synth` stays offline. `NEXT_PUBLIC_API_URL` is baked
- * into the export at build time (the App Runner URL). See onboarding docs.
+ * into the export at build time (the API Gateway URL). See onboarding docs.
  */
 export class WebStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
