@@ -25,9 +25,10 @@ prompt ─▶ POST /v1/verify ─▶ sanitize ─▶ ┌────────
   <em>A zero-width-laced injection — de-obfuscated, blocked, and escalated to the model tier.</em>
 </p>
 
-> 📖 **Interactive explainer:** open [`docs/how-it-works.html`](docs/how-it-works.html) in a
-> browser — a self-contained, offline page that walks through the pipeline with a live
-> in-browser simulator (try the _Hidden injection_ and _Illicit how-to_ samples).
+> 📖 **[Interactive explainer →](https://arifdewiuae.github.io/NEXUS_SENTINEL/how-it-works.html)**
+> — a self-contained page that walks through the pipeline with a live in-browser simulator (try
+> the _Hidden injection_ and _Illicit how-to_ samples). Source:
+> [`docs/how-it-works.html`](docs/how-it-works.html).
 
 ## Why it's interesting
 
