@@ -120,16 +120,15 @@ pattern-matching limitation visible).
 - **Tests:** `escalation.test.ts`, reworked `bedrock-injection.adapter.test.ts` (both tiers),
   fakes still green. api 111 unit + 18 e2e; `aggregate/**` + `screening/**` at 100% coverage.
 
-### B3 ☐ Demo sample prompts
+### B3 ☑ Demo sample prompts — DONE
 
-Extend the dashboard's one-click samples (`apps/web/src/components/VerifierForm.tsx`, `SAMPLES`)
-so each decision path is demoable. Today: Clean / PII (SSN) / Secret (AWS key) / Injection /
-Medical (strict). **Add a complex case that triggers escalation** — e.g. an injection attempt
-laced with zero-width chars or homoglyphs that slips past the regex and forces the Haiku tier.
-
-- Make sure the new sample(s) produce the intended path in **both** `fake` and `aws` modes
-  (the fake adapters back the offline demo).
-- Mirror them, if useful, in `apps/api/test/` verified-prompts so the behavior is pinned.
+- **Done:** added a **Hidden injection** one-click sample (`VerifierForm.tsx`) — the same attack
+  as the visible "Injection" sample but laced with zero-width spaces (built from a `​`
+  escape). The contrast is the demo: visible injection settles on the cheap tier
+  (`⚡ deterministic`), the hidden one is de-obfuscated and **escalates** (`⇡ escalated → Haiku`).
+- **Pinned:** the verified-prompts e2e asserts the obfuscated case blocks with an `obfuscation`
+  match and `escalated: true`, and a clean prompt stays on the deterministic tier
+  (`escalated: false`) — behaviour holds in `fake` (and the same decision path in `aws`).
 
 ---
 

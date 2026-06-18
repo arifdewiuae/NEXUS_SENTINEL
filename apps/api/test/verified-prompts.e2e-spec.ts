@@ -94,5 +94,16 @@ describe('Verified prompts suite (eval gate)', () => {
     const categories = res.body.matches.map((m: { category: string }) => m.category);
     expect(categories).toContain('prompt_injection');
     expect(categories).toContain('obfuscation');
+    // Obfuscation is exactly the case that escalates to the model tier.
+    expect(res.body.escalated).toBe(true);
+  });
+
+  it('settles a clean prompt on the deterministic tier (no escalation)', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/v1/verify')
+      .send({ prompt: "What's the weather in Dubai?", policyId: 'default' });
+    expect(res.status).toBe(200);
+    expect(res.body.decision).toBe('allow');
+    expect(res.body.escalated).toBe(false);
   });
 });
