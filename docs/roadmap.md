@@ -93,12 +93,12 @@ escalation tier turns today's _always-on_ parallel Haiku call into a _conditiona
 - **Trade-off named:** obfuscation flags (and later escalates), never blocks alone — legitimate
   Unicode (emoji ZWJ) exists. Homoglyph map covers the common attack alphabet, not all of Unicode.
 
-### Harmful-intent / illicit instructions ("acid to dissolve chicken") — DEFERRED to deploy
+### Illicit-instructions / misconduct intent (e.g. "shoplift without getting caught") — DEFERRED to deploy
 
 Out of scope for the offline demo; revisit when connecting to AWS. **Good news:** the guardrail
 **already provisions the `MISCONDUCT` content filter** at each policy strength
 (`infra/lib/sentinel-guardrail.ts`), so `PROVIDER=aws` should block this class semantically with
-no code change — verify at deploy. Optional belt-and-suspenders: add a `dangerous_instructions`
+no code change — verify at deploy. Optional belt-and-suspenders: add an `illicit_instructions`
 denied topic to `TOPIC_DEFINITIONS` + the relevant policy then. Explained for users in
 `docs/how-it-works.html` §05 (the offline simulator deliberately shows `allow` to make the
 pattern-matching limitation visible).
