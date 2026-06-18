@@ -15,12 +15,17 @@ any of it.
 > `pnpm --filter @nexus/infra destroy` when you're done.
 
 > **Bedrock quota gotcha (new accounts).** Model _access_ (Marketplace subscription) is
-> separate from _throughput quota_. A fresh account often shows **0 TPM / 0 RPM** for every
-> model in Service Quotas → Bedrock, so live calls throttle with `ThrottlingException: Too
-many tokens per day` even on the first request. Request an increase on _Claude Haiku 4.5
-> (cross-region, on-demand)_. Until it lands, deploy with `provider=fake`. (Also: the
-> `bedrock-mantle` console — "Claude Platform on AWS" — is a _different_ product with separate
-> gating; this project uses classic Bedrock `bedrock-runtime`, not Mantle.)
+> separate from _throughput quota_. A fresh account often has **`Model invocation max tokens
+per day = 0`** — and that quota is frequently **non-adjustable**, so every model (Claude,
+> DeepSeek, open-source — it's account-wide) throttles with `ThrottlingException: Too many
+tokens per day` even on the first call, regardless of which model, auth method, or API you
+> use. Because it's non-adjustable, the self-service Service Quotas page won't fix it — open an
+> **AWS Support / service-limit case** (the throttle error links to AWS Sales) to have the
+> daily-token cap lifted; it also relaxes with account age + verified billing. Until then,
+> deploy with `provider=fake` (a fully working live demo with no Bedrock dependency). Note: the
+> `bedrock-mantle` console is AWS's newer Bedrock experience (it fronts all models and has its
+> own in-console trial allowance) — but this project calls classic `bedrock-runtime`, which is
+> subject to the cap above.
 
 ## Prerequisites
 
@@ -62,7 +67,7 @@ when the API stack references them, and they're also printed for the CLI smoke t
 
 ## 4. Build and push the API image to ECR
 
-App Runner pulls the container from ECR, so build and push before deploying the API stack:
+The Lambda pulls the container image from ECR, so build and push before deploying the API stack:
 
 ```bash
 ACCOUNT=$CDK_DEFAULT_ACCOUNT REGION=$CDK_DEFAULT_REGION
@@ -115,7 +120,7 @@ pnpm --filter @nexus/infra destroy
 
 ## Local AWS mode (optional)
 
-To run the API against live Bedrock from your machine instead of App Runner, set the env
+To run the API against live Bedrock from your machine instead of on Lambda, set the env
 from `apps/api/.env.example` (at minimum `PROVIDER=aws`, `AWS_REGION`, `AUDIT_TABLE_NAME`,
 `BEDROCK_HAIKU_MODEL_ID`, and the `GUARDRAIL_*` ids from the stack outputs) and run
 `pnpm --filter @nexus/api start`.
