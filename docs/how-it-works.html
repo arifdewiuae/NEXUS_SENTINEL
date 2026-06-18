@@ -914,6 +914,7 @@
         const matches = [];
         let block = false,
           redact = false;
+        let escalated; // undefined when the injection screener didn't run
 
         for (const s of hits(text, SECRETS)) {
           block = true;
@@ -926,6 +927,9 @@
         }
         if (policy.injection !== 'off') {
           const inj = detectInjection(text);
+          // Tiered defense: the cheap pre-screen settles obvious cases; the
+          // ambiguous middle (or an obfuscated prompt) escalates to the model.
+          escalated = san.obfuscated || (inj.detected && inj.confidence < 0.85);
           if (inj.detected && inj.confidence >= policy.threshold) {
             if (policy.injection === 'block') block = true;
             matches.push({
@@ -956,7 +960,7 @@
             advice = ADVICE[primary.category];
           }
         }
-        return { decision, matches, reason, advice, sanitization: san };
+        return { decision, matches, reason, advice, escalated, sanitization: san };
       }
 
       // ====================================================================
@@ -1085,6 +1089,13 @@
              <pre class="norm">${escapeHtml(v.sanitization.normalized)}</pre>`
           : '';
 
+        const tier =
+          v.escalated === undefined
+            ? ''
+            : v.escalated
+              ? `<span class="amber" title="The deterministic pre-screen was inconclusive (borderline or obfuscated), so the prompt escalated to the model tier.">⇡ escalated → Haiku</span>`
+              : `<span class="glow" title="Settled by the cheap deterministic pre-screen — no model call.">⚡ deterministic</span>`;
+
         const harmfulNote =
           v.decision === 'allow' &&
           /\b(shoplift|without getting caught|without paying|counterfeit|pick (?:the|a) lock|break in)\b/i.test(
@@ -1095,7 +1106,10 @@
             : '';
 
         res.innerHTML = `
-          <div><span class="badge ${v.decision}">${v.decision}</span></div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between">
+            <span class="badge ${v.decision}">${v.decision}</span>
+            <span style="font-size:13px">${tier}</span>
+          </div>
           <p style="margin:10px 0 0"><span class="glow">▸</span> ${escapeHtml(v.reason)}</p>
           ${matchHtml}
           ${obf}
