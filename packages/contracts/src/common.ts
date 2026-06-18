@@ -15,6 +15,9 @@ export const matchCategorySchema = z.enum([
   'prompt_injection',
   'topic',
   'content',
+  // Hidden/disguised characters (zero-width, bidi, homoglyphs). Surfaced as
+  // evidence by the sanitizer; flag-only — never the sole cause of a block.
+  'obfuscation',
 ]);
 export type MatchCategory = z.infer<typeof matchCategorySchema>;
 
@@ -23,6 +26,9 @@ export type MatchCategory = z.infer<typeof matchCategorySchema>;
  * the single source of truth for "which match is the *primary* reason" — the
  * verdict aggregator emits matches in this order, and `explain()` walks it to
  * pick the headline reason/advice. Change the order here, nowhere else.
+ *
+ * `obfuscation` sits last: it never causes a block on its own, so a real
+ * blocking cause should always win the headline when both are present.
  */
 export const MATCH_PRECEDENCE = [
   'secrets',
@@ -30,6 +36,7 @@ export const MATCH_PRECEDENCE = [
   'prompt_injection',
   'topic',
   'content',
+  'obfuscation',
 ] as const satisfies readonly MatchCategory[];
 
 /** Where the prompt originated — used to tune thresholds. */

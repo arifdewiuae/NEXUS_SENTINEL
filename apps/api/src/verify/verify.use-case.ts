@@ -9,6 +9,7 @@ import type {
   VerifyResponse,
 } from '@nexus/contracts';
 import { VerdictAggregator } from '../aggregate/verdict-aggregator';
+import { sanitize } from '../aggregate/sanitize';
 import { AppConfigService } from '../config/config.module';
 import { GuardrailUnavailableError } from '../common/errors/domain-errors';
 import {
@@ -58,12 +59,23 @@ export class VerifyUseCase {
     const policy = this.policies.resolve(req.policyId);
     const policyLatency = Math.round(performance.now() - policyStart);
 
+    // De-obfuscate first so the screeners see the real text an attacker tried to
+    // disguise (zero-width / bidi / homoglyphs). We screen the normalized prompt
+    // but audit the original — and replay re-sanitizes it, so it stays faithful.
+    const sanitized = sanitize(req.prompt);
+
     const [guardrail, injection] = await Promise.all([
-      this.runGuardrail(req.prompt, policy),
-      this.runInjection(req.prompt, policy),
+      this.runGuardrail(sanitized.normalized, policy),
+      this.runInjection(sanitized.normalized, policy),
     ]);
 
-    const verdict = this.aggregator.combine({ policy, guardrail, injection, prompt: req.prompt });
+    const verdict = this.aggregator.combine({
+      policy,
+      guardrail,
+      injection,
+      prompt: sanitized.normalized,
+      obfuscation: sanitized,
+    });
 
     const latencyMs = {
       policy: policyLatency,

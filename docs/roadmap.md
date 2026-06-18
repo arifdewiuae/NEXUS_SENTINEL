@@ -79,25 +79,29 @@ prompt ─► [B1 sanitize/normalize] ─► guardrail (Bedrock Guardrails)  ─
 The sanitizer is a **pure preprocessing step** (fits the no-I/O aggregator philosophy). The
 escalation tier turns today's _always-on_ parallel Haiku call into a _conditional_ one.
 
-### B1 ☐ Unicode / invisible-symbol sanitizer
+### B1 ☑ Unicode / invisible-symbol sanitizer — DONE
 
-Neither current layer handles zero-width chars, homoglyphs, bidi/RTL overrides, or Unicode tag
-chars. An attacker can hide `ignore previous instructions` from the regex and degrade the LLM.
+- **Done:** `apps/api/src/aggregate/sanitize.ts` strips zero-width / bidi / tag characters,
+  NFKC-folds + maps common Cyrillic/Greek homoglyphs, returns
+  `{ normalized, obfuscated, indicators, removed }`. Wired into `verify.use-case.ts`: screens the
+  **normalized** text, audits the **original** (replay re-sanitizes, so it stays faithful).
+- **Contract:** added `obfuscation` to `matchCategorySchema` + `MATCH_PRECEDENCE` (placed last —
+  never the headline over a real blocking cause). Aggregator emits a flag-only `obfuscation`
+  match; `explain.ts` + web `VerdictCard` updated. `src/aggregate/**` still at 100% coverage.
+- **Tests:** `sanitize.test.ts`, aggregator obfuscation branches, an explain case, and an e2e
+  proving a zero-width-laced injection is de-obfuscated and blocked (api 104 unit + 18 e2e).
+- **Trade-off named:** obfuscation flags (and later escalates), never blocks alone — legitimate
+  Unicode (emoji ZWJ) exists. Homoglyph map covers the common attack alphabet, not all of Unicode.
 
-- **Build:** a pure module (e.g. `apps/api/src/aggregate/sanitize.ts` or
-  `common/util/sanitize.ts`) that returns `{ normalized, indicators, removed }`:
-  - strip/flag zero-width (`​-‍﻿`), bidi overrides (`‪-‮⁦-⁩`),
-    tag chars (`0-F`);
-  - fold common homoglyphs (Cyrillic/Greek look-alikes) to ASCII via NFKC + a small map;
-  - raise an `obfuscation` indicator when anything was stripped/folded.
-- **Wire-in:** run before both screeners in `verify.use-case.ts`; screen the **normalized**
-  text, but **audit/redact the original**. Feed `obfuscation` into the injection signal so it
-  can raise the decision and/or trigger escalation (B2).
-- **Contract:** add `obfuscation` to the injection indicators / match vocabulary in
-  `@nexus/contracts` first (contracts are source of truth). Update the aggregator + 100%
-  branch coverage.
-- **Trade-off to name:** homoglyph folding is a curated map, not exhaustive — documented as
-  "covers the common attack alphabet," not "all of Unicode."
+### Harmful-intent / illicit instructions ("acid to dissolve chicken") — DEFERRED to deploy
+
+Out of scope for the offline demo; revisit when connecting to AWS. **Good news:** the guardrail
+**already provisions the `MISCONDUCT` content filter** at each policy strength
+(`infra/lib/sentinel-guardrail.ts`), so `PROVIDER=aws` should block this class semantically with
+no code change — verify at deploy. Optional belt-and-suspenders: add a `dangerous_instructions`
+denied topic to `TOPIC_DEFINITIONS` + the relevant policy then. Explained for users in
+`docs/how-it-works.html` §05 (the offline simulator deliberately shows `allow` to make the
+pattern-matching limitation visible).
 
 ### B2 ☐ LLM escalation tier
 

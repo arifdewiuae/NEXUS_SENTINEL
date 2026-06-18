@@ -6,6 +6,8 @@ const REASON: Record<MatchCategory, (type: string) => string> = {
   prompt_injection: () => 'The prompt resembles a prompt-injection or jailbreak attempt.',
   topic: (t) => `The prompt requests a denied topic (${t}).`,
   content: (t) => `The prompt triggered the ${t} content filter.`,
+  obfuscation: () =>
+    'The prompt contained hidden or disguised characters designed to evade screening.',
 };
 
 const ADVICE: Record<MatchCategory, string> = {
@@ -15,6 +17,8 @@ const ADVICE: Record<MatchCategory, string> = {
     'Rephrase as a direct request, without instructions to ignore or override system rules.',
   topic: 'Rephrase to avoid this topic, or screen under a policy that permits it.',
   content: 'Remove or soften the flagged content.',
+  obfuscation:
+    'Resubmit using plain, visible text — no zero-width, bidirectional, or look-alike characters.',
 };
 
 /**

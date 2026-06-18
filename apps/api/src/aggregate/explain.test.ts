@@ -39,6 +39,12 @@ describe('explain', () => {
     expect(reason).toContain('HATE');
   });
 
+  it('explains obfuscation evidence', () => {
+    const { reason, advice } = explain('block', [match('obfuscation', 'unicode_obfuscation')]);
+    expect(reason).toMatch(/hidden or disguised characters/i);
+    expect(advice).toMatch(/plain, visible text/i);
+  });
+
   it('picks the highest-precedence cause when several match', () => {
     const { reason } = explain('block', [
       match('content', 'HATE'),

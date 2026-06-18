@@ -11,12 +11,16 @@ import {
 } from '@nexus/contracts';
 import { explain } from './explain';
 import { applyRedaction, buildScores, spanOf } from './score-mapping';
+import type { SanitizationResult } from './sanitize';
 
 export interface AggregateInput {
   policy: Policy;
   guardrail: GuardrailResult;
   injection: InjectionResult | null;
+  /** The (already sanitized) prompt the screeners saw — used for spans/redaction. */
   prompt: string;
+  /** Sanitizer summary, when the prompt was screened through the sanitizer. */
+  obfuscation?: Pick<SanitizationResult, 'obfuscated' | 'indicators'>;
 }
 
 const RECOMMENDED_ACTION: Record<Decision, RecommendedAction> = {
@@ -37,7 +41,7 @@ const RECOMMENDED_ACTION: Record<Decision, RecommendedAction> = {
 @Injectable()
 export class VerdictAggregator {
   combine(input: AggregateInput): Verdict {
-    const { policy, guardrail, injection, prompt } = input;
+    const { policy, guardrail, injection, prompt, obfuscation } = input;
     const matches: Match[] = [];
     let block = false;
     let redact = false;
@@ -123,6 +127,19 @@ export class VerdictAggregator {
         type: c.type,
         confidence: CONFIDENCE_TO_SCORE[c.confidence],
         detail: `Content filter (${c.confidence})`,
+      });
+    }
+
+    // 6. Obfuscation — hidden/disguised characters the sanitizer revealed.
+    // Flag-only: never blocks on its own (legitimate Unicode like emoji ZWJ
+    // sequences exists), but recorded as evidence and, upstream, a reason to
+    // escalate to the LLM screener.
+    if (obfuscation?.obfuscated) {
+      matches.push({
+        category: 'obfuscation',
+        type: 'unicode_obfuscation',
+        confidence: 0.5,
+        detail: obfuscation.indicators.join(', ') || 'Hidden or disguised characters',
       });
     }
 

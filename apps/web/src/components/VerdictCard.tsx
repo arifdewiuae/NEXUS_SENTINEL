@@ -15,6 +15,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   prompt_injection: 'Prompt injection',
   topic: 'Denied topic',
   content: 'Content filter',
+  obfuscation: 'Obfuscation',
 };
 
 const sectionLabel = 'text-2xs font-semibold uppercase tracking-[0.2em] text-mx-green/70';
