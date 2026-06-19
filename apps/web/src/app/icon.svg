@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="6" fill="#04140a"/>
+  <!-- shield: the "firewall" -->
+  <path d="M16 3.5l9 3.2v6.7c0 5.8-3.8 11-9 12.6-5.2-1.6-9-6.8-9-12.6V6.7l9-3.2z"
+        fill="none" stroke="#22c55e" stroke-width="2" stroke-linejoin="round"/>
+  <!-- terminal cursor ">" -->
+  <path d="M12 12.5l4 3.5-4 3.5" fill="none" stroke="#4ade80" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="17.5" y1="19.5" x2="21" y2="19.5" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/>
+</svg>
