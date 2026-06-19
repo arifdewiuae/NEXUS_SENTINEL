@@ -5,6 +5,13 @@
 > Arif Dewi · arifdewi.dev · 2026-05-23
 > Status: Design · Target: shippable demo in one weekend · All-AWS
 
+> **⚠️ Original design snapshot (2026‑05‑23).** This captures the intended design at kickoff.
+> The shipped system has since evolved — notably **App Runner → Lambda + API Gateway +
+> CloudFront** (see [`docs/adr/0005`](docs/adr/0005-lambda-api-gateway-over-app-runner.md)) and
+> **PII handling → detect-on-input** (`BLOCK`, not `ANONYMIZE`). Those and other decisions are
+> recorded in [`docs/adr/`](docs/adr/). Kept as the design-intent record; for the current-state
+> reference see [`CLAUDE.md`](CLAUDE.md).
+
 ---
 
 ## What it is
