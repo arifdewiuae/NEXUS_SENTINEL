@@ -28,7 +28,28 @@ export interface AuditRepository {
   listReplaysOf(requestId: string): Promise<AuditRecord[]>;
 }
 
+/** Who is making the request, for per-user + per-IP rate limiting. */
+export interface RateLimitIdentity {
+  /** A stable per-client id (the `x-client-id` header), or the IP as a fallback. */
+  clientId: string;
+  ip: string;
+}
+
+export interface RateLimitResult {
+  allowed: boolean;
+  /** Seconds until the breached window resets (drives the `Retry-After` header). */
+  retryAfterSeconds?: number;
+  /** Which tier tripped (e.g. `user/hour`, `global/day`) — for diagnostics. */
+  scope?: string;
+}
+
+export interface RateLimitPort {
+  /** Count this request against every tier; deny if any tier is over its limit. */
+  check(identity: RateLimitIdentity): Promise<RateLimitResult>;
+}
+
 /** DI tokens — interfaces have no runtime identity, so we inject by token. */
 export const GUARDRAIL_PORT = Symbol('GuardrailPort');
 export const INJECTION_PORT = Symbol('InjectionPort');
 export const AUDIT_REPOSITORY = Symbol('AuditRepository');
+export const RATE_LIMIT_PORT = Symbol('RateLimitPort');

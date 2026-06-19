@@ -1,14 +1,21 @@
 import { type BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { Global, Module, type Provider } from '@nestjs/common';
 import { AppConfigService } from '../config/config.module';
-import { AUDIT_REPOSITORY, GUARDRAIL_PORT, INJECTION_PORT } from '../common/ports/ports';
+import {
+  AUDIT_REPOSITORY,
+  GUARDRAIL_PORT,
+  INJECTION_PORT,
+  RATE_LIMIT_PORT,
+} from '../common/ports/ports';
 import { BEDROCK_CLIENT, createBedrockClient } from './aws/bedrock-client.factory';
 import { BedrockGuardrailAdapter } from './aws/bedrock-guardrail.adapter';
 import { BedrockInjectionAdapter } from './aws/bedrock-injection.adapter';
 import { DynamoAuditAdapter, createAuditDocClient } from './aws/dynamo-audit.adapter';
+import { DynamoRateLimitAdapter } from './aws/dynamo-rate-limit.adapter';
 import { FakeGuardrailAdapter } from './fake/fake-guardrail.adapter';
 import { FakeInjectionAdapter } from './fake/fake-injection.adapter';
 import { InMemoryAuditAdapter } from './fake/in-memory-audit.adapter';
+import { InMemoryRateLimitAdapter } from './fake/in-memory-rate-limit.adapter';
 
 /**
  * The one place where `PROVIDER` chooses an adapter set (ADR-0001). The AWS
@@ -19,6 +26,7 @@ const adapterProviders: Provider[] = [
   FakeGuardrailAdapter,
   FakeInjectionAdapter,
   InMemoryAuditAdapter,
+  InMemoryRateLimitAdapter,
   {
     provide: BEDROCK_CLIENT,
     useFactory: (config: AppConfigService) => (config.isAws ? createBedrockClient(config) : null),
@@ -51,11 +59,24 @@ const adapterProviders: Provider[] = [
         : fake,
     inject: [AppConfigService, InMemoryAuditAdapter],
   },
+  {
+    provide: RATE_LIMIT_PORT,
+    useFactory: (config: AppConfigService, fake: InMemoryRateLimitAdapter) =>
+      config.isAws
+        ? // RATE_LIMIT_TABLE_NAME is required when aws + enabled (validated at boot).
+          new DynamoRateLimitAdapter(
+            createAuditDocClient(config),
+            config.get('RATE_LIMIT_TABLE_NAME')!,
+            config.rateLimitConfig(),
+          )
+        : fake,
+    inject: [AppConfigService, InMemoryRateLimitAdapter],
+  },
 ];
 
 @Global()
 @Module({
   providers: adapterProviders,
-  exports: [GUARDRAIL_PORT, INJECTION_PORT, AUDIT_REPOSITORY],
+  exports: [GUARDRAIL_PORT, INJECTION_PORT, AUDIT_REPOSITORY, RATE_LIMIT_PORT],
 })
 export class AdaptersModule {}

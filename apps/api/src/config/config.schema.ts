@@ -31,9 +31,24 @@ export const envSchema = z
     /** CORS allowlist. `*` (default) is fine for the public demo. */
     CORS_ORIGINS: z.string().default('*').transform(csv),
 
-    /** Sliding-window rate limit (per IP). */
+    /** Coarse sliding-window throttle (per IP, in-memory @nestjs/throttler). */
     RATE_LIMIT_TTL_MS: z.coerce.number().int().positive().default(60_000),
     RATE_LIMIT_LIMIT: z.coerce.number().int().positive().default(60),
+
+    /**
+     * Shared-state cost limiter (DynamoDB in `aws`, in-memory in `fake`). Caps
+     * billable Bedrock calls per user, per IP, and globally. Disable with
+     * RATE_LIMIT_ENABLED=false (or use PROVIDER=fake as the spend kill switch).
+     */
+    RATE_LIMIT_ENABLED: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((v) => v === 'true'),
+    RATE_LIMIT_USER_PER_HOUR: z.coerce.number().int().positive().default(20),
+    RATE_LIMIT_USER_PER_DAY: z.coerce.number().int().positive().default(60),
+    RATE_LIMIT_IP_PER_HOUR: z.coerce.number().int().positive().default(40),
+    RATE_LIMIT_IP_PER_DAY: z.coerce.number().int().positive().default(120),
+    RATE_LIMIT_GLOBAL_PER_DAY: z.coerce.number().int().positive().default(2_000),
 
     /** Per-leg fan-out timeouts. */
     GUARDRAIL_TIMEOUT_MS: z.coerce.number().int().positive().default(1_500),
@@ -42,6 +57,7 @@ export const envSchema = z
     // --- AWS (required when PROVIDER=aws) ---
     AWS_REGION: z.string().min(1).optional(),
     AUDIT_TABLE_NAME: z.string().min(1).optional(),
+    RATE_LIMIT_TABLE_NAME: z.string().min(1).optional(),
     BEDROCK_HAIKU_MODEL_ID: z.string().min(1).optional(),
     BEDROCK_HAIKU_FALLBACK_MODEL_ID: z.string().min(1).optional(),
     BEDROCK_MAX_ATTEMPTS: z.coerce.number().int().positive().default(3),
@@ -57,6 +73,13 @@ export const envSchema = z
           message: `${key} is required when PROVIDER=aws`,
         });
       }
+    }
+    if (env.RATE_LIMIT_ENABLED && !env.RATE_LIMIT_TABLE_NAME) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['RATE_LIMIT_TABLE_NAME'],
+        message: 'RATE_LIMIT_TABLE_NAME is required when PROVIDER=aws and RATE_LIMIT_ENABLED',
+      });
     }
   });
 

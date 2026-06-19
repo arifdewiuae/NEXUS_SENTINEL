@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
+import type { RateLimitConfig } from '../rate-limit/windows';
 import { type Env, type GuardrailBinding, validateEnv } from './config.schema';
 
 /**
@@ -23,6 +24,17 @@ export class AppConfigService {
    */
   guardrailBinding(policyId: string): GuardrailBinding | undefined {
     return this.get('guardrailBindings')[policyId.toLowerCase()];
+  }
+
+  /** The rate-limit tier limits, assembled from env for the limiter adapters. */
+  rateLimitConfig(): RateLimitConfig {
+    return {
+      userPerHour: this.get('RATE_LIMIT_USER_PER_HOUR'),
+      userPerDay: this.get('RATE_LIMIT_USER_PER_DAY'),
+      ipPerHour: this.get('RATE_LIMIT_IP_PER_HOUR'),
+      ipPerDay: this.get('RATE_LIMIT_IP_PER_DAY'),
+      globalPerDay: this.get('RATE_LIMIT_GLOBAL_PER_DAY'),
+    };
   }
 }
 

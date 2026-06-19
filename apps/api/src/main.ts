@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
   app.enableCors({
     origin: resolveCorsOrigin(config.get('CORS_ORIGINS')),
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'x-api-key', 'x-request-id'],
+    allowedHeaders: ['Content-Type', 'x-api-key', 'x-request-id', 'x-client-id'],
   });
   app.enableShutdownHooks();
 

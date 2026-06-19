@@ -29,3 +29,14 @@ export class AuditRecordNotFoundError extends Error {
     this.name = 'AuditRecordNotFoundError';
   }
 }
+
+/** The caller exceeded a per-user / per-IP / global rate-limit tier. → 429 */
+export class RateLimitExceededError extends Error {
+  constructor(
+    readonly retryAfterSeconds: number,
+    readonly scope?: string,
+  ) {
+    super(`Rate limit exceeded${scope ? ` (${scope})` : ''}`);
+    this.name = 'RateLimitExceededError';
+  }
+}
