@@ -1,5 +1,11 @@
 # 🛡️ Nexus Sentinel
 
+[![CI](https://github.com/arifdewiuae/NEXUS_SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/arifdewiuae/NEXUS_SENTINEL/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/live%20demo-CloudFront-22c55e?logo=amazonaws&logoColor=white)](https://d1nm6g34nlk82m.cloudfront.net/)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20%C2%B7%20100%20%C2%B7%20100%20%C2%B7%20100-brightgreen)](https://d1nm6g34nlk82m.cloudfront.net/)
+
+> 🔴 **[Live demo →](https://d1nm6g34nlk82m.cloudfront.net/)** — running on AWS (Lambda + API Gateway + CloudFront) with real Bedrock Guardrails + Claude Haiku in `eu-north-1`. Rate-limited per user; safe to click around.
+
 **A self-hosted prompt firewall for any LLM.** One endpoint — `POST /v1/verify` — takes a
 prompt plus a policy and returns a structured verdict (`allow` / `redact` / `block`) with
 matched categories, confidence scores, a redacted preview, and a recommended action. Plus
