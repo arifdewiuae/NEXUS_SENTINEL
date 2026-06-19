@@ -49,7 +49,8 @@ prompt ─▶ POST /v1/verify ─▶ sanitize ─▶ ┌────────
   it was resolved deterministically or escalated.
 - **Defined failure modes.** Fail **closed** on the guardrail (it's authoritative), fail
   **open** on the injection screener ([ADR-0004](docs/adr/0004-fail-closed-on-guardrail-fail-open-on-injection.md)).
-- **Safe to expose.** Optional API-key auth, CORS allowlist, rate limiting, RFC-9457
+- **Safe to expose.** Optional API-key auth, CORS allowlist, layered rate limiting (edge
+  throttle + a DynamoDB per-user/global cost cap on billable Bedrock calls), RFC-9457
   `problem+json` errors, structured logging that **never logs raw prompts or keys**.
 
 ## Try these prompts (offline, asserted in CI)
@@ -147,15 +148,15 @@ behind an HTTP API Gateway that throttles at the edge ([ADR-0005](docs/adr/0005-
 
 What this MVP does, and what a production deployment would add:
 
-- **Done:** optional API-key auth, CORS allowlist, **edge rate limiting at API Gateway**
-  (with the app's in-memory `Retry-After` limiter as defense-in-depth), RFC-9457 errors with
-  request ids, helmet headers, prompt/key redaction in logs, adaptive SDK retries, per-leg
-  timeouts, fail-closed/open policy, Haiku token-usage logging, model fallback chain, PITR on
-  the audit table.
-- **Next:** per-tenant API keys + quotas (HTTP API throttles per-stage; per-key quotas want a
-  Lambda authorizer or the REST API variant — see [ADR-0005](docs/adr/0005-lambda-api-gateway-over-app-runner.md)),
-  a CMK for audit-at-rest, WAF in front of CloudFront, OpenTelemetry traces, and a cost
-  dashboard from the logged token usage.
+- **Done:** optional API-key auth, CORS allowlist, **layered rate limiting** — edge throttle at
+  API Gateway + a **shared-state cost limiter** (DynamoDB counters, per-user / per-IP / global
+  daily caps with `Retry-After`) that bounds billable Bedrock calls, plus a `PROVIDER=fake` spend
+  kill switch and an AWS Budgets alarm. RFC-9457 errors with request ids, helmet headers,
+  prompt/key redaction in logs, adaptive SDK retries, per-leg timeouts, fail-closed/open policy,
+  Haiku token-usage logging, model fallback chain, PITR on the audit table.
+- **Next:** per-tenant API keys (the limiter already keys on `x-client-id`), a CMK for
+  audit-at-rest, WAF in front of CloudFront, OpenTelemetry traces, and a cost dashboard from the
+  logged token usage.
 
 ## Conventions
 
