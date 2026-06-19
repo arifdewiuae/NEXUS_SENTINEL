@@ -52,3 +52,15 @@ export function detectPii(prompt: string): PatternHit[] {
 export function detectSecrets(prompt: string): PatternHit[] {
   return collectHits(prompt, SECRET_PATTERNS);
 }
+
+/**
+ * Criminal "how-to" phrasings → MISCONDUCT content filter. A deliberately narrow
+ * offline stand-in for Bedrock's content classifier, enough to make the
+ * documented misconduct sample resolve consistently without Bedrock.
+ */
+const MISCONDUCT_RE =
+  /\b(pick(?:ing)?\s+(?:a\s+|someone'?s\s+)?pocket|pickpocket|shoplift|hot[\s-]?wire|pick\s+a\s+lock|break\s+in(?:to)?\s+(?:a\s+)?(?:house|car|home)|launder(?:ing)?\s+money|counterfeit|evade\s+(?:taxes|the\s+police))\b/i;
+
+export function detectMisconduct(prompt: string): boolean {
+  return MISCONDUCT_RE.test(prompt);
+}
