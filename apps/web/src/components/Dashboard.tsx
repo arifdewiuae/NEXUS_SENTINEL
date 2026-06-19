@@ -1,85 +1,41 @@
 'use client';
 
-import type { Policy, ReplayResult, VerifyResponse } from '@nexus/contracts';
-import { useEffect, useState } from 'react';
-import { ApiError, api } from '@/lib/api';
-import type { FeedItem } from '@/lib/types';
+import { useState } from 'react';
+import { usePolicies } from '@/lib/hooks/usePolicies';
+import { useReplay } from '@/lib/hooks/useReplay';
+import { useVerifier } from '@/lib/hooks/useVerifier';
 import { ActivityFeed } from './ActivityFeed';
 import { Button } from './Button';
 import { ReplayView } from './ReplayView';
 import { VerdictCard } from './VerdictCard';
 import { VerifierForm } from './VerifierForm';
 
-function errorMessage(err: unknown): string {
-  if (err instanceof ApiError) return err.message;
-  return 'Something went wrong. Please try again.';
-}
-
 export function Dashboard() {
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [verdict, setVerdict] = useState<VerifyResponse | null>(null);
-  const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [pending, setPending] = useState(false);
+  // One shared error surface across the three data hooks (UI concern owned here).
   const [error, setError] = useState<string | null>(null);
+  const policies = usePolicies(setError);
+  const { verdict, feed, pending, verify } = useVerifier(setError);
+  const {
+    target: replayTarget,
+    policyId: replayPolicyId,
+    result: replayResult,
+    pending: replayPending,
+    setPolicyId: setReplayPolicyId,
+    open: openReplay,
+    close: closeReplay,
+    run: runReplay,
+  } = useReplay(setError);
 
-  const [replayTarget, setReplayTarget] = useState<FeedItem | null>(null);
-  const [replayPolicyId, setReplayPolicyId] = useState('strict');
-  const [replayResult, setReplayResult] = useState<ReplayResult | null>(null);
-  const [replayPending, setReplayPending] = useState(false);
-
-  useEffect(() => {
-    void api
-      .listPolicies()
-      .then(setPolicies)
-      .catch((err: unknown) => setError(errorMessage(err)));
-  }, []);
-
-  const handleVerify = async (prompt: string, policyId: string) => {
-    setPending(true);
-    setError(null);
+  const handleVerify = (prompt: string, policyId: string) => {
     // A new request renews the view: clear any open replay comparison.
-    setReplayTarget(null);
-    setReplayResult(null);
-    try {
-      const res = await api.verify({ prompt, policyId });
-      setVerdict(res);
-      const ts = new Date().toLocaleTimeString(undefined, { hour12: false });
-      setFeed((prev) => [
-        { requestId: res.requestId, prompt, policyId: res.policyId, decision: res.decision, ts },
-        ...prev,
-      ]);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setPending(false);
-    }
-  };
-
-  const handleReplay = async () => {
-    if (!replayTarget) return;
-    setReplayPending(true);
-    setError(null);
-    try {
-      const res = await api.replay({
-        requestId: replayTarget.requestId,
-        policyId: replayPolicyId,
-      });
-      setReplayResult(res);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setReplayPending(false);
-    }
+    closeReplay();
+    void verify(prompt, policyId);
   };
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[1.25fr_1fr]">
       <div className="min-w-0 space-y-4">
-        <VerifierForm
-          policies={policies}
-          pending={pending}
-          onSubmit={(prompt, policyId) => void handleVerify(prompt, policyId)}
-        />
+        <VerifierForm policies={policies} pending={pending} onSubmit={handleVerify} />
 
         {error && (
           <p
@@ -120,7 +76,7 @@ export function Dashboard() {
                 ))}
               </select>
               <Button
-                onClick={() => void handleReplay()}
+                onClick={() => void runReplay()}
                 disabled={replayPending}
                 className="px-4 py-2 text-sm tracking-[0.15em]"
               >
@@ -143,10 +99,7 @@ export function Dashboard() {
         <ActivityFeed
           items={feed}
           activeRequestId={replayTarget?.requestId}
-          onReplay={(item) => {
-            setReplayTarget(item);
-            setReplayResult(null);
-          }}
+          onReplay={openReplay}
         />
       </aside>
     </div>
