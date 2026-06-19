@@ -60,11 +60,18 @@ pnpm --filter @nexus/infra synth  # cdk synth (no deploy)
 ## Where things live
 
 - Decision logic → `apps/api/src/aggregate/verdict-aggregator.ts`
+- Input sanitizer (strips zero-width/bidi, folds homoglyphs) → `apps/api/src/aggregate/sanitize.ts`
 - Fan-out + fail-open/closed policy → `apps/api/src/verify/verify.use-case.ts`
+- Rate limiting → `apps/api/src/rate-limit/` (tiers) + `common/guards/rate-limit.guard.ts`;
+  DynamoDB adapter `adapters/aws/dynamo-rate-limit.adapter.ts`, fake in `adapters/fake/`;
+  tiers/env via `RATE_LIMIT_*` (per-user / per-IP / global)
 - Adapter selection → `apps/api/src/adapters/adapters.module.ts`
 - AWS adapters (Bedrock/DynamoDB) → `apps/api/src/adapters/aws/`
 - Policies → `apps/api/src/policy/policies/{strict,default,permissive}.json`
   (guardrail ids overlaid from `GUARDRAIL_<POLICY>_ID` / `_VERSION` env at boot)
+- Guardrail ids: the API reads `GUARDRAIL_<POLICY>_ID` / `_VERSION` from env; infra sources
+  these from SSM (`/nexus-sentinel/guardrail/<policy>/{id,version}`) so guardrail versions are
+  decoupled from the API stack — see `infra/lib/guardrail-params.ts`
 - Guardrail provisioning → `infra/lib/guardrails-stack.ts` + `sentinel-guardrail.ts`
 - CDK app entrypoint → `infra/bin/nexus-sentinel.ts`
 - AWS onboarding → `docs/onboarding-aws-bedrock.md`; ADRs → `docs/adr/`
