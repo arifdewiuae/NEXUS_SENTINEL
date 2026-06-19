@@ -27,6 +27,31 @@ tokens per day` even on the first call, regardless of which model, auth method, 
 > own in-console trial allowance) — but this project calls classic `bedrock-runtime`, which is
 > subject to the cap above.
 
+## Reference deployment & gotchas (read first)
+
+The live reference deployment runs in **`eu-north-1` (Stockholm)** — swap the region in the
+commands below. A few things that cost real time the first time:
+
+- **Inference-profile prefix is per-region.** Use `eu.anthropic.claude-haiku-4-5-20251001-v1:0`
+  in EU (the `us.` id 404s there). Fallback: `global.anthropic.claude-haiku-4-5-20251001-v1:0`.
+- **The CDK CLI overrides `CDK_DEFAULT_REGION`** from the resolved profile/SDK region — exporting
+  it is ignored. Set `AWS_REGION`/`AWS_DEFAULT_REGION=<region>` on every `cdk` command (or pin the
+  profile's region), and pass `aws://<acct>/<region>` explicitly to `cdk bootstrap`.
+- **Build the Lambda image single-platform**, or Lambda rejects the buildx attestation manifest:
+  `docker build --platform linux/arm64 --provenance=false --sbom=false …`. A code change won't
+  redeploy under the `:latest` tag (same image URI) — pin the digest with `-c apiImageTag=sha256:…`.
+- **Guardrail versions are decoupled via SSM**, not CloudFormation cross-stack exports (see
+  `infra/lib/guardrail-params.ts`): CFN refuses to change an exported value while another stack
+  imports it, which otherwise made rolling a new guardrail version impossible without recreating the
+  API. Bump a version → redeploy Guardrails then Api → same API URL.
+- **PII is configured as `BLOCK`, not `ANONYMIZE`** (`infra/lib/sentinel-guardrail.ts`):
+  `ApplyGuardrail(source=INPUT)` never surfaces anonymized entities, so the redact path needs
+  BLOCK-detection; the app builds the masked preview itself.
+- **Cost** — this is a public, per-request-billed demo: use the `provider=fake` kill switch when
+  idle, set an AWS Budgets alarm, and `cdk destroy` when done. `-c maxConcurrency=N` (in
+  `infra/lib/api-stack.ts`) becomes usable once the account's Lambda concurrency limit is raised
+  above 10.
+
 ## Prerequisites
 
 - An AWS account with admin (or equivalent) access, AWS CLI v2 configured (`aws configure`
