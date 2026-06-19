@@ -38,9 +38,19 @@ export class ApiStack extends Stack {
     // `fake` (default) runs the offline adapter set — a live demo with no Bedrock
     // quota dependency. Flip with `-c provider=aws` once Bedrock quota is granted.
     const provider = (this.node.tryGetContext('provider') as string | undefined) ?? 'fake';
+    // Bedrock cross-region inference profiles are prefixed per geo (us./eu./apac.).
+    // Derive the prefix from the deploy region so the default is correct wherever
+    // this stack lands — the bare `us.` id 404s outside the US. Override with
+    // `-c haikuModelId=...` for an explicit profile (e.g. `global.anthropic…`).
+    const HAIKU_MODEL = 'anthropic.claude-haiku-4-5-20251001-v1:0';
+    const geoPrefix = this.region.startsWith('eu')
+      ? 'eu'
+      : this.region.startsWith('ap')
+        ? 'apac'
+        : 'us';
     const haikuModel =
       (this.node.tryGetContext('haikuModelId') as string | undefined) ??
-      'us.anthropic.claude-haiku-4-5-20251001-v1:0';
+      `${geoPrefix}.${HAIKU_MODEL}`;
     const imageTag = (this.node.tryGetContext('apiImageTag') as string | undefined) ?? 'latest';
     // Optional hard cost cap: bound concurrent Lambda executions, which bounds
     // the rate of (billable) Bedrock calls and compute. Opt-in via
