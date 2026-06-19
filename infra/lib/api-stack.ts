@@ -52,6 +52,12 @@ export class ApiStack extends Stack {
       (this.node.tryGetContext('haikuModelId') as string | undefined) ??
       `${geoPrefix}.${HAIKU_MODEL}`;
     const imageTag = (this.node.tryGetContext('apiImageTag') as string | undefined) ?? 'latest';
+    // CORS allowlist. Defaults to `*` (open — fine for the public demo, and the
+    // right default since a fixed origin would reject any other deploy's own
+    // dashboard). Pass `-c corsOrigin=https://<dashboard-domain>` to scope browser
+    // calls to the dashboard as defense-in-depth. Note: CORS is browser-enforced
+    // only — it does not gate curl/server clients; rate limiting does that.
+    const corsOrigin = (this.node.tryGetContext('corsOrigin') as string | undefined) ?? '*';
     // Optional hard cost cap: bound concurrent Lambda executions, which bounds
     // the rate of (billable) Bedrock calls and compute. Opt-in via
     // `-c maxConcurrency=N` — a new account's total concurrency limit can be as
@@ -79,6 +85,7 @@ export class ApiStack extends Stack {
       reservedConcurrentExecutions,
       environment: {
         PROVIDER: provider,
+        CORS_ORIGINS: corsOrigin,
         // AWS_REGION is reserved on Lambda (provided by the runtime) — don't set it.
         AUDIT_TABLE_NAME: props.table.tableName,
         RATE_LIMIT_TABLE_NAME: props.rateLimitTable.tableName,
