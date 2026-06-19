@@ -9,14 +9,11 @@ import { WebStack } from '../lib/web-stack';
 function synth() {
   const app = new App();
   const data = new DataStack(app, 'Data');
+  // The API reads guardrail ids/versions from SSM by name, so it no longer takes
+  // a cross-stack reference to the Guardrails stack.
   const guardrails = new GuardrailsStack(app, 'Guardrails');
   const api = new ApiStack(app, 'Api', {
     table: data.table,
-    guardrails: {
-      strict: guardrails.strict,
-      default: guardrails.default,
-      permissive: guardrails.permissive,
-    },
   });
   const web = new WebStack(app, 'Web');
   return {
@@ -45,6 +42,18 @@ describe('infrastructure', () => {
   it('provisions three guardrails, each with a version', () => {
     t.guardrails.resourceCountIs('AWS::Bedrock::Guardrail', 3);
     t.guardrails.resourceCountIs('AWS::Bedrock::GuardrailVersion', 3);
+  });
+
+  it('publishes guardrail ids + versions to SSM (decoupled from the API stack)', () => {
+    // 3 guardrails × { id, version } = 6 parameters.
+    t.guardrails.resourceCountIs('AWS::SSM::Parameter', 6);
+    t.guardrails.hasResourceProperties('AWS::SSM::Parameter', {
+      Name: '/nexus-sentinel/guardrail/default/version',
+    });
+    // The Guardrails stack no longer exports anything for cross-stack import —
+    // that coupling is what blocked rolling a new guardrail version.
+    const outputs = (t.guardrails.toJSON().Outputs ?? {}) as Record<string, { Export?: unknown }>;
+    expect(Object.values(outputs).filter((o) => o.Export)).toHaveLength(0);
   });
 
   it('enables the medical and legal denied topics only on the strict guardrail', () => {

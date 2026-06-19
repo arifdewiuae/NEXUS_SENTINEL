@@ -15,16 +15,14 @@ const env: Environment = {
 };
 
 const data = new DataStack(app, 'NexusSentinel-Data', { env });
-const guardrails = new GuardrailsStack(app, 'NexusSentinel-Guardrails', { env });
+
+// The Guardrails stack publishes ids/versions to SSM; the API stack reads them
+// by name (see guardrail-params.ts), so there is no cross-stack reference here.
+new GuardrailsStack(app, 'NexusSentinel-Guardrails', { env });
 
 new ApiStack(app, 'NexusSentinel-Api', {
   env,
   table: data.table,
-  guardrails: {
-    strict: guardrails.strict,
-    default: guardrails.default,
-    permissive: guardrails.permissive,
-  },
 });
 
 new WebStack(app, 'NexusSentinel-Web', { env });

@@ -6,12 +6,12 @@ import type { TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Architecture, DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import type { Construct } from 'constructs';
-import type { GuardrailRef } from './guardrails-stack';
+import { guardrailParamName } from './guardrail-params';
 
 export interface ApiStackProps extends StackProps {
   table: TableV2;
-  guardrails: { strict: GuardrailRef; default: GuardrailRef; permissive: GuardrailRef };
 }
 
 /**
@@ -41,6 +41,20 @@ export class ApiStack extends Stack {
       (this.node.tryGetContext('haikuModelId') as string | undefined) ??
       'us.anthropic.claude-haiku-4-5-20251001-v1:0';
     const imageTag = (this.node.tryGetContext('apiImageTag') as string | undefined) ?? 'latest';
+    // Optional hard cost cap: bound concurrent Lambda executions, which bounds
+    // the rate of (billable) Bedrock calls and compute. Opt-in via
+    // `-c maxConcurrency=N` — a new account's total concurrency limit can be as
+    // low as 10, which forbids reserving any (AWS requires ≥10 left unreserved).
+    const maxConcurrencyCtx = this.node.tryGetContext('maxConcurrency') as string | undefined;
+    const reservedConcurrentExecutions =
+      maxConcurrencyCtx !== undefined ? Number(maxConcurrencyCtx) : undefined;
+
+    // Guardrail ids/versions come from SSM (written by the Guardrails stack),
+    // read here by name — not as a CloudFormation cross-stack export. This lets
+    // a new immutable guardrail version roll out via a plain redeploy without
+    // recreating the API. See ./guardrail-params.ts.
+    const gParam = (policy: 'strict' | 'default' | 'permissive', field: 'id' | 'version') =>
+      StringParameter.valueForStringParameter(this, guardrailParamName(policy, field));
 
     // Image built + pushed out of band (keeps `cdk synth` Docker-free).
     const repo = Repository.fromRepositoryName(this, 'Repo', 'nexus-sentinel-api');
@@ -51,17 +65,18 @@ export class ApiStack extends Stack {
       architecture: Architecture.ARM_64,
       memorySize: 1024,
       timeout: Duration.seconds(30),
+      reservedConcurrentExecutions,
       environment: {
         PROVIDER: provider,
         // AWS_REGION is reserved on Lambda (provided by the runtime) — don't set it.
         AUDIT_TABLE_NAME: props.table.tableName,
         BEDROCK_HAIKU_MODEL_ID: haikuModel,
-        GUARDRAIL_STRICT_ID: props.guardrails.strict.id,
-        GUARDRAIL_STRICT_VERSION: props.guardrails.strict.version,
-        GUARDRAIL_DEFAULT_ID: props.guardrails.default.id,
-        GUARDRAIL_DEFAULT_VERSION: props.guardrails.default.version,
-        GUARDRAIL_PERMISSIVE_ID: props.guardrails.permissive.id,
-        GUARDRAIL_PERMISSIVE_VERSION: props.guardrails.permissive.version,
+        GUARDRAIL_STRICT_ID: gParam('strict', 'id'),
+        GUARDRAIL_STRICT_VERSION: gParam('strict', 'version'),
+        GUARDRAIL_DEFAULT_ID: gParam('default', 'id'),
+        GUARDRAIL_DEFAULT_VERSION: gParam('default', 'version'),
+        GUARDRAIL_PERMISSIVE_ID: gParam('permissive', 'id'),
+        GUARDRAIL_PERMISSIVE_VERSION: gParam('permissive', 'version'),
       },
     });
 
