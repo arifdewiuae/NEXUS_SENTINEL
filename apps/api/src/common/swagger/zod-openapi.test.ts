@@ -6,7 +6,7 @@ describe('openApiSchema', () => {
   it('converts a zod object into an inlined OpenAPI schema', () => {
     const schema = openApiSchema(z.object({ name: z.string(), age: z.number().optional() })) as {
       type: string;
-      properties: Record<string, { type: string }>;
+      properties: { name: { type: string }; age: { type: string } };
       required?: string[];
     };
 
