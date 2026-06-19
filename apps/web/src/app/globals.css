@@ -115,6 +115,31 @@ select:open::picker-icon {
   backdrop-filter: blur(1px);
 }
 
+/* Score gauge: the fill width is data-driven (set via the --mx-pct custom
+   property on the element); the glow and cell segmentation are static styling. */
+.mx-gauge-fill {
+  height: 100%;
+  width: var(--mx-pct, 0%);
+  box-shadow: 0 0 10px rgba(180, 255, 200, 0.35);
+}
+.mx-gauge-cells {
+  background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0 2px, transparent 2px 7px);
+}
+
+/* CRT overlay layers — faint scanlines + a centre-weighted vignette/tint. */
+.mx-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.12) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+}
+.mx-vignette {
+  background: radial-gradient(ellipse at center, rgba(0, 40, 10, 0.04) 0%, rgba(0, 0, 0, 0.28) 100%);
+}
+
 /* Blinking terminal caret. */
 .mx-caret::after {
   content: '▋';

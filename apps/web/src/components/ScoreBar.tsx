@@ -25,17 +25,11 @@ export function ScoreBar({ label, score, barClass = 'bg-mx-green' }: ScoreBarPro
         aria-valuemax={100}
       >
         <div
-          className={`h-full ${barClass}`}
-          style={{ width: `${pct}%`, boxShadow: '0 0 10px rgba(180,255,200,0.35)' }}
+          className={`mx-gauge-fill ${barClass}`}
+          style={{ '--mx-pct': `${pct}%` } as React.CSSProperties}
         />
         {/* Segment the fill into terminal-style cells. */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(90deg, rgba(0,0,0,0.6) 0 2px, transparent 2px 7px)',
-          }}
-        />
+        <div className="pointer-events-none absolute inset-0 mx-gauge-cells" />
       </div>
       <span className="w-12 shrink-0 text-right font-mono text-mx-green-bright">
         {asPercent(score)}
