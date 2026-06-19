@@ -18,7 +18,7 @@ Full product design: `NEXUS_SENTINEL_DESIGN.md`.
 | `packages/contracts` | `@nexus/contracts` | zod schemas + inferred types — **single source of truth** for the API shape. Everything else depends on this. |
 | `apps/api`           | `@nexus/api`       | NestJS verifier (ports & adapters).                                                                           |
 | `apps/web`           | `@nexus/web`       | Next.js 16 dashboard.                                                                                         |
-| `infra`              | `@nexus/infra`     | AWS CDK (DynamoDB, Guardrails, App Runner, Amplify).                                                          |
+| `infra`              | `@nexus/infra`     | AWS CDK (DynamoDB, Guardrails, Lambda + API Gateway, CloudFront). See ADR-0005.                               |
 
 ## Architecture rules (non-negotiable)
 

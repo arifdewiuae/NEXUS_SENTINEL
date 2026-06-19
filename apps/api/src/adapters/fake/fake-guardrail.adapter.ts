@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { ConfidenceLevel, ContentDetection, GuardrailResult, Policy } from '@nexus/contracts';
 import type { GuardrailPort } from '../../common/ports/ports';
-import { detectPii, detectSecrets } from './detection-patterns';
+import { detectMisconduct, detectPii, detectSecrets } from './detection-patterns';
 import { detectInjection, detectTopics } from '../../screening/heuristics';
 
 const BASELINE_CONTENT_FILTERS = ['HATE', 'INSULTS', 'SEXUAL', 'VIOLENCE', 'MISCONDUCT'] as const;
@@ -50,12 +50,19 @@ export class FakeGuardrailAdapter implements GuardrailPort {
       detected: true,
     }));
 
-    const content: ContentDetection[] = BASELINE_CONTENT_FILTERS.map((type) => ({
-      type,
-      confidence: 'NONE',
-      action: 'NONE',
-      detected: false,
-    }));
+    // Only MISCONDUCT has an offline heuristic; the other content filters need
+    // Bedrock's classifier and stay inert in fake mode. LOW strength (permissive)
+    // detects but does not block, mirroring the real strength knob.
+    const misconduct = detectMisconduct(prompt);
+    const content: ContentDetection[] = BASELINE_CONTENT_FILTERS.map((type) => {
+      const hit = type === 'MISCONDUCT' && misconduct;
+      return {
+        type,
+        confidence: hit ? (strength === 'LOW' ? 'LOW' : 'HIGH') : 'NONE',
+        action: hit && strength !== 'LOW' ? 'BLOCKED' : 'NONE',
+        detected: hit,
+      };
+    });
 
     const injection = detectInjection(prompt);
     if (injection.detected) {

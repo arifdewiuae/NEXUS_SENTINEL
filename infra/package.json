@@ -2,7 +2,7 @@
   "name": "@nexus/infra",
   "version": "0.1.0",
   "private": true,
-  "description": "Nexus Sentinel infrastructure — AWS CDK (DynamoDB, Bedrock Guardrails, App Runner, CloudFront).",
+  "description": "Nexus Sentinel infrastructure — AWS CDK (DynamoDB, Bedrock Guardrails, Lambda + API Gateway, CloudFront).",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",

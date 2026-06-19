@@ -15,12 +15,22 @@ COPY packages/contracts ./packages/contracts
 COPY apps/api ./apps/api
 RUN pnpm --filter @nexus/contracts build \
   && pnpm --filter @nexus/api build \
-  && pnpm --filter @nexus/api deploy --prod /out
+  && pnpm --filter @nexus/api deploy --legacy --prod /out
 
 FROM node:22-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# AWS Lambda Web Adapter: a Lambda *extension* that proxies the function's
+# invocations to the app's HTTP port. It only activates under the Lambda runtime
+# (Lambda runs binaries in /opt/extensions), so this layer is inert for local
+# runs and other container hosts — one image runs everywhere. AWS_LWA_PORT must
+# match the port the app listens on (PORT, above). See infra/lib/api-stack.ts.
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+ENV AWS_LWA_PORT=3000
+ENV AWS_LWA_READINESS_CHECK_PATH=/health
+
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/dist ./dist
 COPY --from=build /out/package.json ./package.json

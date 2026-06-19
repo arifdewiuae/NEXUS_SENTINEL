@@ -1,5 +1,7 @@
 import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import type { Construct } from 'constructs';
+import { guardrailParamName, type GuardrailPolicy } from './guardrail-params';
 import { SentinelGuardrail } from './sentinel-guardrail';
 
 export interface GuardrailRef {
@@ -41,7 +43,18 @@ export class GuardrailsStack extends Stack {
     this.default = { id: def.guardrailId, version: def.guardrailVersion };
     this.permissive = { id: permissive.guardrailId, version: permissive.guardrailVersion };
 
+    // Publish id + version to SSM (read by the API stack by name) rather than as
+    // CloudFormation cross-stack exports — see ./guardrail-params.ts for why.
     for (const [name, ref] of Object.entries({ strict, default: def, permissive })) {
+      const policy = name as GuardrailPolicy;
+      new StringParameter(this, `${name}IdParam`, {
+        parameterName: guardrailParamName(policy, 'id'),
+        stringValue: ref.guardrailId,
+      });
+      new StringParameter(this, `${name}VersionParam`, {
+        parameterName: guardrailParamName(policy, 'version'),
+        stringValue: ref.guardrailVersion,
+      });
       new CfnOutput(this, `${name}GuardrailId`, { value: ref.guardrailId });
       new CfnOutput(this, `${name}GuardrailVersion`, { value: ref.guardrailVersion });
     }

@@ -1,13 +1,56 @@
 # Onboarding: enable AWS Bedrock and deploy live
 
 Nexus Sentinel runs fully offline by default (`PROVIDER=fake`). This guide switches it to
-the live AWS runtime: Bedrock Guardrails + Claude Haiku + DynamoDB on App Runner, with the
-dashboard on CloudFront. You only need this to run against real Bedrock — every test and
-the local demo work without any of it.
+the live AWS runtime: Bedrock Guardrails + Claude Haiku + DynamoDB, with the API on
+**Lambda + API Gateway** and the dashboard on CloudFront ([ADR-0005](adr/0005-lambda-api-gateway-over-app-runner.md)).
+You only need this to run against real Bedrock — every test and the local demo work without
+any of it.
 
-> **Cost note:** App Runner, DynamoDB (on-demand), Bedrock calls, and CloudFront all bill
-> while running. Set an AWS Budgets alarm, and run `pnpm --filter @nexus/infra destroy`
-> when you're done.
+> **Tip — deploy on fakes first.** You can deploy the whole stack with `provider=fake` (the
+> default) for a live public URL with **no Bedrock dependency**, then flip to `provider=aws`
+> once Bedrock quota is granted. Pass `-c provider=aws` on the API deploy to switch.
+
+> **Cost note:** Lambda + API Gateway scale to zero (free tier covers demo volume); DynamoDB
+> (on-demand), Bedrock calls, and CloudFront bill per use. Set an AWS Budgets alarm, and run
+> `pnpm --filter @nexus/infra destroy` when you're done.
+
+> **Bedrock quota gotcha (new accounts).** Model _access_ (Marketplace subscription) is
+> separate from _throughput quota_. A fresh account often has **`Model invocation max tokens
+per day = 0`** — and that quota is frequently **non-adjustable**, so every model (Claude,
+> DeepSeek, open-source — it's account-wide) throttles with `ThrottlingException: Too many
+tokens per day` even on the first call, regardless of which model, auth method, or API you
+> use. Because it's non-adjustable, the self-service Service Quotas page won't fix it — open an
+> **AWS Support / service-limit case** (the throttle error links to AWS Sales) to have the
+> daily-token cap lifted; it also relaxes with account age + verified billing. Until then,
+> deploy with `provider=fake` (a fully working live demo with no Bedrock dependency). Note: the
+> `bedrock-mantle` console is AWS's newer Bedrock experience (it fronts all models and has its
+> own in-console trial allowance) — but this project calls classic `bedrock-runtime`, which is
+> subject to the cap above.
+
+## Reference deployment & gotchas (read first)
+
+The live reference deployment runs in **`eu-north-1` (Stockholm)** — swap the region in the
+commands below. A few things that cost real time the first time:
+
+- **Inference-profile prefix is per-region.** Use `eu.anthropic.claude-haiku-4-5-20251001-v1:0`
+  in EU (the `us.` id 404s there). Fallback: `global.anthropic.claude-haiku-4-5-20251001-v1:0`.
+- **The CDK CLI overrides `CDK_DEFAULT_REGION`** from the resolved profile/SDK region — exporting
+  it is ignored. Set `AWS_REGION`/`AWS_DEFAULT_REGION=<region>` on every `cdk` command (or pin the
+  profile's region), and pass `aws://<acct>/<region>` explicitly to `cdk bootstrap`.
+- **Build the Lambda image single-platform**, or Lambda rejects the buildx attestation manifest:
+  `docker build --platform linux/arm64 --provenance=false --sbom=false …`. A code change won't
+  redeploy under the `:latest` tag (same image URI) — pin the digest with `-c apiImageTag=sha256:…`.
+- **Guardrail versions are decoupled via SSM**, not CloudFormation cross-stack exports (see
+  `infra/lib/guardrail-params.ts`): CFN refuses to change an exported value while another stack
+  imports it, which otherwise made rolling a new guardrail version impossible without recreating the
+  API. Bump a version → redeploy Guardrails then Api → same API URL.
+- **PII is configured as `BLOCK`, not `ANONYMIZE`** (`infra/lib/sentinel-guardrail.ts`):
+  `ApplyGuardrail(source=INPUT)` never surfaces anonymized entities, so the redact path needs
+  BLOCK-detection; the app builds the masked preview itself.
+- **Cost** — this is a public, per-request-billed demo: use the `provider=fake` kill switch when
+  idle, set an AWS Budgets alarm, and `cdk destroy` when done. `-c maxConcurrency=N` (in
+  `infra/lib/api-stack.ts`) becomes usable once the account's Lambda concurrency limit is raised
+  above 10.
 
 ## Prerequisites
 
@@ -49,7 +92,7 @@ when the API stack references them, and they're also printed for the CLI smoke t
 
 ## 4. Build and push the API image to ECR
 
-App Runner pulls the container from ECR, so build and push before deploying the API stack:
+The Lambda pulls the container image from ECR, so build and push before deploying the API stack:
 
 ```bash
 ACCOUNT=$CDK_DEFAULT_ACCOUNT REGION=$CDK_DEFAULT_REGION
@@ -102,7 +145,7 @@ pnpm --filter @nexus/infra destroy
 
 ## Local AWS mode (optional)
 
-To run the API against live Bedrock from your machine instead of App Runner, set the env
+To run the API against live Bedrock from your machine instead of on Lambda, set the env
 from `apps/api/.env.example` (at minimum `PROVIDER=aws`, `AWS_REGION`, `AUDIT_TABLE_NAME`,
 `BEDROCK_HAIKU_MODEL_ID`, and the `GUARDRAIL_*` ids from the stack outputs) and run
 `pnpm --filter @nexus/api start`.

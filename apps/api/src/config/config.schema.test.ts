@@ -24,10 +24,22 @@ describe('validateEnv', () => {
       PROVIDER: 'aws',
       AWS_REGION: 'us-east-1',
       AUDIT_TABLE_NAME: 'audit',
+      RATE_LIMIT_TABLE_NAME: 'ratelimit',
       BEDROCK_HAIKU_MODEL_ID: 'model',
     });
     expect(env.PROVIDER).toBe('aws');
     expect(env.AWS_REGION).toBe('us-east-1');
+  });
+
+  it('requires RATE_LIMIT_TABLE_NAME on AWS when rate limiting is enabled', () => {
+    expect(() =>
+      validateEnv({
+        PROVIDER: 'aws',
+        AWS_REGION: 'us-east-1',
+        AUDIT_TABLE_NAME: 'audit',
+        BEDROCK_HAIKU_MODEL_ID: 'model',
+      }),
+    ).toThrow(/RATE_LIMIT_TABLE_NAME/);
   });
 
   it('rejects an invalid PORT', () => {

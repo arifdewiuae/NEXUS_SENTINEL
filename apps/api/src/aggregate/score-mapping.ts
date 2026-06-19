@@ -53,25 +53,25 @@ export function buildScores(guardrail: GuardrailResult, injection: InjectionResu
 }
 
 /**
- * Produce the redacted prompt for a `redact` decision.
- * - `anonymize`   → the Guardrail-anonymized text (falls back to the prompt).
- * - `placeholder` → original prompt with each detected entity masked as `[TYPE]`.
- * - `block-on-detect` never reaches here (it blocks instead).
+ * Produce the redacted prompt for a `redact` decision by masking each detected
+ * PII entity in place. We build the preview from the matched substring rather
+ * than from `guardrail.redactedText`: Bedrock only masks `ANONYMIZE` entities on
+ * model *output*, so for input screening the entities are configured as `BLOCK`
+ * (to be detected at all) and never come back pre-masked. Styles differ only in
+ * the bracket form — `anonymize` mirrors Bedrock's `{TYPE}`, `placeholder` uses
+ * `[TYPE]`. `block-on-detect` never reaches here (it blocks instead).
  */
 export function applyRedaction(
   prompt: string,
   guardrail: GuardrailResult,
   style: RedactionStyle,
 ): string | undefined {
-  if (style === 'placeholder') {
-    let masked = prompt;
-    for (const p of guardrail.pii) {
-      if (p.detected && p.match) {
-        masked = masked.split(p.match).join(`[${p.type}]`);
-      }
+  const [open, close] = style === 'placeholder' ? ['[', ']'] : ['{', '}'];
+  let masked = prompt;
+  for (const p of guardrail.pii) {
+    if (p.detected && p.match) {
+      masked = masked.split(p.match).join(`${open}${p.type}${close}`);
     }
-    return masked;
   }
-  // anonymize
-  return guardrail.redactedText ?? prompt;
+  return masked;
 }

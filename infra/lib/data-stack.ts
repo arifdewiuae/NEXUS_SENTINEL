@@ -10,6 +10,8 @@ import type { Construct } from 'constructs';
  */
 export class DataStack extends Stack {
   readonly table: TableV2;
+  /** Shared-state rate-limit counters: one item per (tier, window), auto-expired by TTL. */
+  readonly rateLimitTable: TableV2;
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -32,6 +34,13 @@ export class DataStack extends Stack {
           projectionType: ProjectionType.ALL,
         },
       ],
+    });
+
+    this.rateLimitTable = new TableV2(this, 'RateLimitTable', {
+      partitionKey: { name: 'pk', type: AttributeType.STRING },
+      billing: Billing.onDemand(),
+      timeToLiveAttribute: 'ttl',
+      removalPolicy: RemovalPolicy.DESTROY,
     });
   }
 }

@@ -16,6 +16,24 @@ const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 /** Client-side ceiling per request — guards against a hung API leaving a spinner forever. */
 const REQUEST_TIMEOUT_MS = 10_000;
 
+const CLIENT_ID_KEY = 'nx-client-id';
+
+/**
+ * A stable per-browser id sent as `x-client-id`, so the API can apply the
+ * per-user rate limit fairly (rather than lumping everyone behind a shared IP).
+ * Generated once and persisted; trivially cleared, which is fine — the per-IP
+ * and global caps are the backstops.
+ */
+function clientId(): string {
+  if (typeof window === 'undefined') return 'ssr';
+  let id = window.localStorage.getItem(CLIENT_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    window.localStorage.setItem(CLIENT_ID_KEY, id);
+  }
+  return id;
+}
+
 const policiesSchema = z.array(policySchema);
 
 /**
@@ -54,6 +72,7 @@ async function request<T>(
       signal: controller.signal,
       headers: {
         'content-type': 'application/json',
+        'x-client-id': clientId(),
         ...(API_KEY ? { 'x-api-key': API_KEY } : {}),
         ...init?.headers,
       },

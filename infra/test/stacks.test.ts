@@ -9,14 +9,12 @@ import { WebStack } from '../lib/web-stack';
 function synth() {
   const app = new App();
   const data = new DataStack(app, 'Data');
+  // The API reads guardrail ids/versions from SSM by name, so it no longer takes
+  // a cross-stack reference to the Guardrails stack.
   const guardrails = new GuardrailsStack(app, 'Guardrails');
   const api = new ApiStack(app, 'Api', {
     table: data.table,
-    guardrails: {
-      strict: guardrails.strict,
-      default: guardrails.default,
-      permissive: guardrails.permissive,
-    },
+    rateLimitTable: data.rateLimitTable,
   });
   const web = new WebStack(app, 'Web');
   return {
@@ -34,17 +32,41 @@ describe('infrastructure', () => {
     t.data.hasResourceProperties('AWS::DynamoDB::GlobalTable', {
       BillingMode: 'PAY_PER_REQUEST',
     });
-    const table = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable'))[0] as {
-      Properties: { GlobalSecondaryIndexes: { IndexName: string }[] };
-    };
-    const indexNames = table.Properties.GlobalSecondaryIndexes.map((g) => g.IndexName);
+    const tables = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable')) as {
+      Properties: { GlobalSecondaryIndexes?: { IndexName: string }[] };
+    }[];
+    const audit = tables.find((tbl) => tbl.Properties.GlobalSecondaryIndexes);
+    const indexNames = (audit?.Properties.GlobalSecondaryIndexes ?? []).map((g) => g.IndexName);
     expect(indexNames).toContain('recent-index');
     expect(indexNames).toContain('replayOf-index');
+  });
+
+  it('provisions a TTL-expiring rate-limit table', () => {
+    const tables = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable')) as {
+      Properties: {
+        GlobalSecondaryIndexes?: unknown;
+        TimeToLiveSpecification?: { AttributeName: string; Enabled: boolean };
+      };
+    }[];
+    const rl = tables.find((tbl) => !tbl.Properties.GlobalSecondaryIndexes);
+    expect(rl?.Properties.TimeToLiveSpecification).toMatchObject({ AttributeName: 'ttl' });
   });
 
   it('provisions three guardrails, each with a version', () => {
     t.guardrails.resourceCountIs('AWS::Bedrock::Guardrail', 3);
     t.guardrails.resourceCountIs('AWS::Bedrock::GuardrailVersion', 3);
+  });
+
+  it('publishes guardrail ids + versions to SSM (decoupled from the API stack)', () => {
+    // 3 guardrails × { id, version } = 6 parameters.
+    t.guardrails.resourceCountIs('AWS::SSM::Parameter', 6);
+    t.guardrails.hasResourceProperties('AWS::SSM::Parameter', {
+      Name: '/nexus-sentinel/guardrail/default/version',
+    });
+    // The Guardrails stack no longer exports anything for cross-stack import —
+    // that coupling is what blocked rolling a new guardrail version.
+    const outputs = (t.guardrails.toJSON().Outputs ?? {}) as Record<string, { Export?: unknown }>;
+    expect(Object.values(outputs).filter((o) => o.Export)).toHaveLength(0);
   });
 
   it('enables the medical and legal denied topics only on the strict guardrail', () => {
@@ -55,11 +77,21 @@ describe('infrastructure', () => {
     expect(withTopics).toHaveLength(1);
   });
 
-  it('runs the API on App Runner with a least-privilege Bedrock policy', () => {
-    t.api.resourceCountIs('AWS::AppRunner::Service', 1);
+  it('runs the API on Lambda behind API Gateway with a least-privilege Bedrock policy', () => {
+    t.api.resourceCountIs('AWS::Lambda::Function', 1);
+    t.api.resourceCountIs('AWS::ApiGatewayV2::Api', 1);
     t.api.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: Match.objectLike({
         Statement: Match.arrayWith([Match.objectLike({ Action: 'bedrock:ApplyGuardrail' })]),
+      }),
+    });
+  });
+
+  it('throttles the API Gateway stage at the edge (rate limiting before compute)', () => {
+    t.api.hasResourceProperties('AWS::ApiGatewayV2::Stage', {
+      DefaultRouteSettings: Match.objectLike({
+        ThrottlingRateLimit: 20,
+        ThrottlingBurstLimit: 40,
       }),
     });
   });

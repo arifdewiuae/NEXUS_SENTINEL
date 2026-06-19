@@ -16,6 +16,9 @@ export default defineConfig({
       LOG_LEVEL: 'silent',
       // Large limit so the throttler never trips across the shared test IP.
       RATE_LIMIT_LIMIT: '100000',
+      // The shared-state limiter has its own unit tests; keep it off for the broad
+      // e2e suite (which fires many requests from one identity).
+      RATE_LIMIT_ENABLED: 'false',
     },
     coverage: {
       provider: 'v8',

@@ -4,7 +4,12 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestApp } from './utils/create-test-app';
 
-const IBUPROFEN = 'What dose of ibuprofen for a 12-year-old?';
+// A medical *diagnosis* request: allowed under permissive (topic not denied),
+// blocked under strict (denied topic). Works identically on the fake adapters
+// and live Bedrock — unlike a dosage question, which Bedrock's topic model does
+// not reliably classify as medical_diagnosis.
+const MEDICAL_DIAGNOSIS =
+  'Do I have diabetes based on these symptoms: thirst, fatigue, blurry vision?';
 
 describe('Audit + replay API (e2e)', () => {
   let app: INestApplication;
@@ -21,7 +26,7 @@ describe('Audit + replay API (e2e)', () => {
     // 1. Original verify under permissive → allowed.
     const verify = await http()
       .post('/v1/verify')
-      .send({ prompt: IBUPROFEN, policyId: 'permissive' });
+      .send({ prompt: MEDICAL_DIAGNOSIS, policyId: 'permissive' });
     expect(verify.status).toBe(200);
     expect(verify.body.decision).toBe('allow');
     const requestId: string = verify.body.requestId;

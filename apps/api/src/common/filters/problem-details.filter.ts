@@ -11,6 +11,7 @@ import {
   AuditRecordNotFoundError,
   GuardrailUnavailableError,
   PolicyNotFoundError,
+  RateLimitExceededError,
 } from '../errors/domain-errors';
 
 interface ProblemDetails {
@@ -47,6 +48,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       );
     }
 
+    if (problem.status === 429 && typeof problem.retryAfterSeconds === 'number') {
+      res.setHeader('Retry-After', String(problem.retryAfterSeconds));
+    }
+
     res.status(problem.status).type('application/problem+json').json(problem);
   }
 
@@ -60,6 +65,15 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         title: 'Service Unavailable',
         status: 503,
         detail: exception.message,
+      };
+    }
+    if (exception instanceof RateLimitExceededError) {
+      return {
+        type: 'about:blank',
+        title: 'Too Many Requests',
+        status: 429,
+        detail: `${exception.message}. Retry after ${exception.retryAfterSeconds}s.`,
+        retryAfterSeconds: exception.retryAfterSeconds,
       };
     }
     if (exception instanceof HttpException) {
