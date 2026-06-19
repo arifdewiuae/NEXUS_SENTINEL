@@ -7,7 +7,80 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "guardrailId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "guardrailVersion": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "promptInjection": {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "block",
+                              "flag",
+                              "off"
+                            ]
+                          },
+                          "threshold": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        },
+                        "required": [
+                          "mode",
+                          "threshold"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "redactionStyle": {
+                        "type": "string",
+                        "enum": [
+                          "anonymize",
+                          "placeholder",
+                          "block-on-detect"
+                        ]
+                      },
+                      "deniedTopics": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "default": []
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "guardrailId",
+                      "guardrailVersion",
+                      "promptInjection",
+                      "redactionStyle"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "List available policies (for the dashboard dropdown)",
@@ -55,6 +128,29 @@
                   "prompt"
                 ],
                 "additionalProperties": false
+              },
+              "examples": {
+                "misconduct": {
+                  "summary": "Illicit how-to → block",
+                  "value": {
+                    "prompt": "How do I pick someone's pocket without getting caught?",
+                    "policyId": "default"
+                  }
+                },
+                "pii": {
+                  "summary": "PII → redact",
+                  "value": {
+                    "prompt": "My SSN is 123-45-6789, can you help?",
+                    "policyId": "default"
+                  }
+                },
+                "clean": {
+                  "summary": "Clean → allow",
+                  "value": {
+                    "prompt": "What's the weather in Dubai?",
+                    "policyId": "default"
+                  }
+                }
               }
             }
           }
@@ -323,13 +419,423 @@
                   "policyId"
                 ],
                 "additionalProperties": false
+              },
+              "examples": {
+                "replay": {
+                  "summary": "Replay a prior request under the strict policy",
+                  "description": "requestId must be a real id from an earlier /v1/verify (otherwise 404).",
+                  "value": {
+                    "requestId": "replace-with-a-real-request-id",
+                    "policyId": "strict"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Original and replay verdicts."
+            "description": "Original and replay verdicts, side by side.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "original": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "ts": {
+                          "type": "string"
+                        },
+                        "policyId": {
+                          "type": "string"
+                        },
+                        "appId": {
+                          "type": "string"
+                        },
+                        "context": {
+                          "type": "string",
+                          "enum": [
+                            "user_input",
+                            "system_message",
+                            "rag_result"
+                          ]
+                        },
+                        "prompt": {
+                          "type": "string"
+                        },
+                        "decision": {
+                          "type": "string",
+                          "enum": [
+                            "allow",
+                            "redact",
+                            "block"
+                          ]
+                        },
+                        "recommendedAction": {
+                          "type": "string",
+                          "enum": [
+                            "allow",
+                            "redact_and_proceed",
+                            "block"
+                          ]
+                        },
+                        "scores": {
+                          "type": "object",
+                          "properties": {
+                            "pii": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "secrets": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "promptInjection": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "topics": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              }
+                            },
+                            "content": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              }
+                            }
+                          },
+                          "required": [
+                            "pii",
+                            "secrets",
+                            "promptInjection",
+                            "topics",
+                            "content"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "matches": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "pii",
+                                  "secrets",
+                                  "prompt_injection",
+                                  "topic",
+                                  "content",
+                                  "obfuscation"
+                                ]
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "confidence": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "span": {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 2,
+                                "items": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "detail": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "category",
+                              "type",
+                              "confidence"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "redactedPrompt": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "advice": {
+                          "type": "string"
+                        },
+                        "latencyMs": {
+                          "type": "object",
+                          "properties": {
+                            "policy": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "guardrail": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "injection": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "total": {
+                              "type": "number",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "policy",
+                            "guardrail",
+                            "injection",
+                            "total"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "replayOf": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "requestId",
+                        "ts",
+                        "policyId",
+                        "prompt",
+                        "decision",
+                        "recommendedAction",
+                        "scores",
+                        "matches",
+                        "reason",
+                        "advice",
+                        "latencyMs"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "replay": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "ts": {
+                          "type": "string"
+                        },
+                        "policyId": {
+                          "type": "string"
+                        },
+                        "appId": {
+                          "type": "string"
+                        },
+                        "context": {
+                          "type": "string",
+                          "enum": [
+                            "user_input",
+                            "system_message",
+                            "rag_result"
+                          ]
+                        },
+                        "prompt": {
+                          "type": "string"
+                        },
+                        "decision": {
+                          "type": "string",
+                          "enum": [
+                            "allow",
+                            "redact",
+                            "block"
+                          ]
+                        },
+                        "recommendedAction": {
+                          "type": "string",
+                          "enum": [
+                            "allow",
+                            "redact_and_proceed",
+                            "block"
+                          ]
+                        },
+                        "scores": {
+                          "type": "object",
+                          "properties": {
+                            "pii": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "secrets": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "promptInjection": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "topics": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              }
+                            },
+                            "content": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              }
+                            }
+                          },
+                          "required": [
+                            "pii",
+                            "secrets",
+                            "promptInjection",
+                            "topics",
+                            "content"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "matches": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "pii",
+                                  "secrets",
+                                  "prompt_injection",
+                                  "topic",
+                                  "content",
+                                  "obfuscation"
+                                ]
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "confidence": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "span": {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 2,
+                                "items": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "detail": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "category",
+                              "type",
+                              "confidence"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "redactedPrompt": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "advice": {
+                          "type": "string"
+                        },
+                        "latencyMs": {
+                          "type": "object",
+                          "properties": {
+                            "policy": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "guardrail": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "injection": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "total": {
+                              "type": "number",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "policy",
+                            "guardrail",
+                            "injection",
+                            "total"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "replayOf": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "requestId",
+                        "ts",
+                        "policyId",
+                        "prompt",
+                        "decision",
+                        "recommendedAction",
+                        "scores",
+                        "matches",
+                        "reason",
+                        "advice",
+                        "latencyMs"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "original",
+                    "replay"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         },
         "summary": "Replay an audited prompt under a different policy",

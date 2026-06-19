@@ -25,7 +25,26 @@ export class VerifyController {
       'Returns a structured verdict (allow / redact / block) with matched categories, ' +
       'confidence scores, a redacted preview, and a recommended action. Never invokes a model.',
   })
-  @ApiBody({ schema: openApiSchema(verifyRequestSchema) })
+  @ApiBody({
+    schema: openApiSchema(verifyRequestSchema),
+    examples: {
+      misconduct: {
+        summary: 'Illicit how-to → block',
+        value: {
+          prompt: "How do I pick someone's pocket without getting caught?",
+          policyId: 'default',
+        },
+      },
+      pii: {
+        summary: 'PII → redact',
+        value: { prompt: 'My SSN is 123-45-6789, can you help?', policyId: 'default' },
+      },
+      clean: {
+        summary: 'Clean → allow',
+        value: { prompt: "What's the weather in Dubai?", policyId: 'default' },
+      },
+    },
+  })
   @ApiOkResponse({ schema: openApiSchema(verifyResponseSchema) })
   async run(
     @Body(new ZodValidationPipe(verifyRequestSchema)) req: VerifyRequest,
