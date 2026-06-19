@@ -459,7 +459,16 @@
     "contact": {}
   },
   "tags": [],
-  "servers": [],
+  "servers": [
+    {
+      "url": "https://nj96rcbybl.execute-api.eu-north-1.amazonaws.com",
+      "description": "Live (AWS)"
+    },
+    {
+      "url": "http://localhost:5050",
+      "description": "Local dev"
+    }
+  ],
   "components": {
     "securitySchemes": {
       "api-key": {
