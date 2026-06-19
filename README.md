@@ -112,6 +112,21 @@ API docs (Swagger) are served at <http://localhost:5050/docs>.
 
 ## Architecture
 
+How the deployed pieces fit together (the logical request pipeline is at the top of this README;
+this is the physical AWS topology):
+
+```mermaid
+flowchart LR
+  U[Browser] -->|HTTPS| CF[CloudFront]
+  CF --> S3[(S3 static&middot;Next.js export)]
+  U -->|POST /v1/verify| AGW[HTTP API Gateway&middot;edge throttle 20/40]
+  AGW --> L[Lambda&middot;container image&middot;NestJS]
+  L -->|ApplyGuardrail| BR[Bedrock Guardrails]
+  L -->|escalate if ambiguous| HK[Bedrock&middot;Claude Haiku]
+  L --> DDB[(DynamoDB&middot;audit + rate-limit)]
+  L -.reads guardrail ids.-> SSM[(SSM Params&middot;id/version)]
+```
+
 | Path                 | Package            | Role                                                                         |
 | -------------------- | ------------------ | ---------------------------------------------------------------------------- |
 | `packages/contracts` | `@nexus/contracts` | zod schemas + inferred types — the single source of truth for the API shape. |
