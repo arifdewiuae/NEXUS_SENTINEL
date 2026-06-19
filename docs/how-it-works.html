@@ -470,6 +470,7 @@
           <a href="#hidden">› hidden-character attacks</a>
           <a href="#semantic">› semantic threats</a>
           <a href="#architecture">› architecture</a>
+          <a href="#aws">› running on aws</a>
         </nav>
       </header>
 
@@ -717,6 +718,64 @@
         <p class="muted" style="font-size: 13px">
           The decision aggregator is held to 100% branch coverage — it's the part you most want to
           be able to reason about, so it's tested exhaustively.
+        </p>
+      </section>
+
+      <!-- ===================== AWS ===================== -->
+      <section class="panel" id="aws">
+        <div class="section-tag">// 07 — running on aws</div>
+        <h2><span class="num">▸</span>What runs it on AWS</h2>
+        <p>
+          The whole system is serverless and lives in one region (<code>eu-north-1</code>). The
+          dashboard is served from the edge; the API runs next to the data it needs. Nothing is
+          always-on, so it costs ~nothing when idle.
+        </p>
+        <pre class="norm">browser ─▶ CloudFront ─▶ S3   (static dashboard, edge-cached)
+   │
+   └──────▶ API Gateway ─▶ Lambda (NestJS API)
+                             ├─▶ Bedrock    Guardrails + Claude Haiku
+                             ├─▶ DynamoDB   audit log + rate-limit counters
+                             └─▶ SSM        guardrail ids / versions</pre>
+        <ul class="tight">
+          <li>
+            <strong>CloudFront + S3.</strong> The Next.js dashboard is a static export served from a
+            private S3 bucket behind a CloudFront CDN — cached at edge locations, no server to run.
+          </li>
+          <li>
+            <strong>API Gateway (HTTP API).</strong> The public HTTPS front door. It throttles at
+            the edge (20 req/s, burst 40) <em>before</em> any compute runs — the first cost-defense
+            layer.
+          </li>
+          <li>
+            <strong>Lambda (container image, ARM64).</strong> The NestJS API itself, run through the
+            AWS Lambda Web Adapter so the <em>same</em> Docker image runs on a laptop and in
+            production. Full Node.js — not an edge runtime.
+          </li>
+          <li>
+            <strong>Bedrock.</strong> <code>ApplyGuardrail</code> for PII / secrets / topics /
+            content, and Claude Haiku (Converse) for the graded injection &amp; topic signal — the
+            only billable, model-backed calls.
+          </li>
+          <li>
+            <strong>DynamoDB.</strong> Two on-demand tables — the audit log (with a replay index)
+            and the rate-limit counters (auto-expiring via TTL).
+          </li>
+          <li>
+            <strong>SSM Parameter Store.</strong> Holds the guardrail ids / versions; the API reads
+            them by name, so a new guardrail version ships without touching the API stack.
+          </li>
+          <li>
+            <strong>Budgets + CloudWatch.</strong> A monthly cost alarm and structured logs — which
+            never record raw prompts or keys.
+          </li>
+          <li>
+            <strong>CDK.</strong> Every resource above is defined in TypeScript (<code>infra/</code>);
+            one <code>cdk deploy</code> stands the whole system up.
+          </li>
+        </ul>
+        <p class="muted" style="font-size: 13px">
+          Cost is bounded by design: edge throttling, per-user / per-IP / global DynamoDB caps, a
+          Budgets alarm, and a <code>PROVIDER=fake</code> switch that turns off every billable call.
         </p>
       </section>
 
