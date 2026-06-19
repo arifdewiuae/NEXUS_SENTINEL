@@ -25,10 +25,10 @@ prompt ─▶ POST /v1/verify ─▶ sanitize ─▶ ┌────────
 ```
 
 <p align="center">
-  <img src="docs/img/dashboard-hidden-injection.png" width="860"
-    alt="Nexus Sentinel dashboard: a zero-width-obfuscated injection is de-obfuscated, blocked, and escalated to the Haiku tier" />
+  <img src="docs/img/demo.gif" width="860"
+    alt="Nexus Sentinel dashboard walkthrough: prompts run through the firewall and return allow / redact / block verdicts with matches, scores, and a redacted preview" />
   <br />
-  <em>A zero-width-laced injection — de-obfuscated, blocked, and escalated to the model tier.</em>
+  <em>The dashboard in action — prompts judged live into allow / redact / block verdicts, with replay.</em>
 </p>
 
 > 📖 **[Interactive explainer →](https://arifdewiuae.github.io/NEXUS_SENTINEL/how-it-works.html)**
