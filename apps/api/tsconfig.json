@@ -2,8 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "moduleResolution": "Node",
-    "baseUrl": "./",
+    "moduleResolution": "node10",
     "composite": false,
     "incremental": false,
     "noEmit": true,
