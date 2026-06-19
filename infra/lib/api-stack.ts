@@ -12,6 +12,7 @@ import { guardrailParamName } from './guardrail-params';
 
 export interface ApiStackProps extends StackProps {
   table: TableV2;
+  rateLimitTable: TableV2;
 }
 
 /**
@@ -70,6 +71,7 @@ export class ApiStack extends Stack {
         PROVIDER: provider,
         // AWS_REGION is reserved on Lambda (provided by the runtime) — don't set it.
         AUDIT_TABLE_NAME: props.table.tableName,
+        RATE_LIMIT_TABLE_NAME: props.rateLimitTable.tableName,
         BEDROCK_HAIKU_MODEL_ID: haikuModel,
         GUARDRAIL_STRICT_ID: gParam('strict', 'id'),
         GUARDRAIL_STRICT_VERSION: gParam('strict', 'version'),
@@ -81,6 +83,7 @@ export class ApiStack extends Stack {
     });
 
     props.table.grantReadWriteData(fn);
+    props.rateLimitTable.grantReadWriteData(fn);
     fn.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,

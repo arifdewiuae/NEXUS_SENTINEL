@@ -23,6 +23,7 @@ new GuardrailsStack(app, 'NexusSentinel-Guardrails', { env });
 new ApiStack(app, 'NexusSentinel-Api', {
   env,
   table: data.table,
+  rateLimitTable: data.rateLimitTable,
 });
 
 new WebStack(app, 'NexusSentinel-Web', { env });

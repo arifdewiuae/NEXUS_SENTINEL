@@ -14,6 +14,7 @@ function synth() {
   const guardrails = new GuardrailsStack(app, 'Guardrails');
   const api = new ApiStack(app, 'Api', {
     table: data.table,
+    rateLimitTable: data.rateLimitTable,
   });
   const web = new WebStack(app, 'Web');
   return {
@@ -31,12 +32,24 @@ describe('infrastructure', () => {
     t.data.hasResourceProperties('AWS::DynamoDB::GlobalTable', {
       BillingMode: 'PAY_PER_REQUEST',
     });
-    const table = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable'))[0] as {
-      Properties: { GlobalSecondaryIndexes: { IndexName: string }[] };
-    };
-    const indexNames = table.Properties.GlobalSecondaryIndexes.map((g) => g.IndexName);
+    const tables = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable')) as {
+      Properties: { GlobalSecondaryIndexes?: { IndexName: string }[] };
+    }[];
+    const audit = tables.find((tbl) => tbl.Properties.GlobalSecondaryIndexes);
+    const indexNames = (audit?.Properties.GlobalSecondaryIndexes ?? []).map((g) => g.IndexName);
     expect(indexNames).toContain('recent-index');
     expect(indexNames).toContain('replayOf-index');
+  });
+
+  it('provisions a TTL-expiring rate-limit table', () => {
+    const tables = Object.values(t.data.findResources('AWS::DynamoDB::GlobalTable')) as {
+      Properties: {
+        GlobalSecondaryIndexes?: unknown;
+        TimeToLiveSpecification?: { AttributeName: string; Enabled: boolean };
+      };
+    }[];
+    const rl = tables.find((tbl) => !tbl.Properties.GlobalSecondaryIndexes);
+    expect(rl?.Properties.TimeToLiveSpecification).toMatchObject({ AttributeName: 'ttl' });
   });
 
   it('provisions three guardrails, each with a version', () => {
