@@ -35,6 +35,11 @@ prompt ─▶ POST /v1/verify ─▶ sanitize ─▶ ┌────────
 > — a self-contained page that walks through the pipeline with a live in-browser simulator (try
 > the _Hidden injection_ and _Illicit how-to_ samples). Source:
 > [`docs/how-it-works.html`](docs/how-it-works.html).
+>
+> 🔧 **[API reference →](https://arifdewiuae.github.io/NEXUS_SENTINEL/api.html)** — the OpenAPI
+> spec rendered with Redoc, generated from the live Nest metadata (source:
+> [`apps/api/openapi.json`](apps/api/openapi.json)). The same spec backs the live `/docs` Swagger
+> route when the API is running.
 
 ## Why it's interesting
 

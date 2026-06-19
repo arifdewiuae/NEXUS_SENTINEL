@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexus Sentinel — API reference</title>
+    <meta
+      name="description"
+      content="OpenAPI reference for Nexus Sentinel — the POST /v1/verify prompt-firewall API."
+    />
+    <link rel="icon" href="./img/favicon.svg" />
+    <style>
+      body {
+        margin: 0;
+        background: #050805;
+      }
+      /* Thin banner linking back to the explainer / live demo. */
+      .nx-bar {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        background: #060d08;
+        color: #b6f5c8;
+        border-bottom: 1px solid rgba(125, 255, 160, 0.18);
+        padding: 10px 16px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .nx-bar strong {
+        color: #7dffa0;
+      }
+      .nx-bar a {
+        color: #7dffa0;
+        text-decoration: none;
+      }
+      .nx-bar a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nx-bar">
+      <strong>🛡️ Nexus Sentinel · API</strong>
+      <a href="./how-it-works.html">← Explainer</a>
+      <a href="https://d1nm6g34nlk82m.cloudfront.net/">Live demo</a>
+      <a href="https://github.com/arifdewiuae/NEXUS_SENTINEL">GitHub</a>
+    </div>
+    <div id="redoc"></div>
+    <!-- Redoc standalone, pinned to the v2 major on a reliable CDN. -->
+    <script src="https://cdn.jsdelivr.net/npm/redoc@2/bundles/redoc.standalone.js"></script>
+    <script>
+      Redoc.init(
+        './openapi.json',
+        {
+          hideDownloadButton: false,
+          theme: {
+            colors: { primary: { main: '#22c55e' } },
+            typography: {
+              fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+              code: {
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+              },
+            },
+          },
+        },
+        document.getElementById('redoc'),
+      );
+    </script>
+  </body>
+</html>
