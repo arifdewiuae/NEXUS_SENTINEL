@@ -54,6 +54,10 @@ pnpm --filter @nexus/infra synth  # cdk synth (no deploy)
 - **Conventional commits**, enforced by commitlint. Scopes: `contracts`, `api`, `web`, `infra`,
   `docs`, `ci`, `repo`, `deps`.
 - **Tests:** Vitest. Co-locate unit tests as `*.test.ts`; API e2e in `apps/api/test/`.
+- **No task runner, by choice.** Pure pnpm workspaces — no Turbo/Nx. `pnpm -r` gives
+  dependency-ordered fan-out across packages; `concurrently` runs the dev servers. With four
+  packages and sub-minute builds, a task runner's caching/affected-graph wouldn't yet earn its
+  config cost; `turbo run` over the same scripts is the upgrade path if the graph or CI time grows.
 - Branch off `main`; open a PR. CI must be green (build, typecheck, lint, format, unit, e2e,
   cdk synth).
 
