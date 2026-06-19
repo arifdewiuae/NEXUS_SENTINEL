@@ -9,6 +9,7 @@ import {
   type VerifyResponse,
 } from '@nexus/contracts';
 import { z } from 'zod';
+import { ROUTES } from './routes';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5050';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
@@ -57,6 +58,14 @@ const problemSchema = z.object({
   detail: z.string().optional(),
 });
 
+/** Map a non-OK response (ideally an RFC-9457 problem+json body) to an ApiError. */
+function toApiError(res: Response, raw: unknown): ApiError {
+  const problem = problemSchema.safeParse(raw);
+  const title = problem.success && problem.data.title ? problem.data.title : res.statusText;
+  const detail = problem.success ? problem.data.detail : undefined;
+  return new ApiError(res.status, title || 'Request failed', detail);
+}
+
 async function request<T>(
   path: string,
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
@@ -88,12 +97,7 @@ async function request<T>(
 
   const raw: unknown = await res.json().catch(() => undefined);
 
-  if (!res.ok) {
-    const problem = problemSchema.safeParse(raw);
-    const title = problem.success && problem.data.title ? problem.data.title : res.statusText;
-    const detail = problem.success ? problem.data.detail : undefined;
-    throw new ApiError(res.status, title || 'Request failed', detail);
-  }
+  if (!res.ok) throw toApiError(res, raw);
 
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
@@ -105,18 +109,18 @@ async function request<T>(
 /** The verifier API client. Every response is validated against the contracts. */
 export const api = {
   verify(req: VerifyRequest): Promise<VerifyResponse> {
-    return request('/v1/verify', verifyResponseSchema, {
+    return request(ROUTES.verify, verifyResponseSchema, {
       method: 'POST',
       body: JSON.stringify(req),
     });
   },
 
   listPolicies(): Promise<Policy[]> {
-    return request('/v1/policies', policiesSchema);
+    return request(ROUTES.policies, policiesSchema);
   },
 
   replay(req: ReplayRequest): Promise<ReplayResult> {
-    return request('/v1/replay', replayResultSchema, {
+    return request(ROUTES.replay, replayResultSchema, {
       method: 'POST',
       body: JSON.stringify(req),
     });
