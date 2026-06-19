@@ -87,12 +87,13 @@ describe('VerdictAggregator', () => {
   });
 
   describe('PII', () => {
-    it('redacts (anonymize) using the guardrail-anonymized text', () => {
+    it('redacts (anonymize) by masking the matched entity as {TYPE}', () => {
       const v = aggregator.combine({
         policy: policy({ redactionStyle: 'anonymize' }),
         guardrail: guardrail({
-          pii: [{ type: 'EMAIL', action: 'ANONYMIZED', detected: true, match: 'a@b.com' }],
-          redactedText: 'email {EMAIL}',
+          // Detected via BLOCK on input; the aggregator builds the {TYPE} mask
+          // from the match itself, not from any Bedrock-anonymized text.
+          pii: [{ type: 'EMAIL', action: 'BLOCKED', detected: true, match: 'a@b.com' }],
         }),
         injection: injection(),
         prompt: 'email a@b.com',
@@ -417,7 +418,7 @@ describe('VerdictAggregator', () => {
   });
 
   describe('redaction fallbacks', () => {
-    it('anonymize falls back to the original prompt when no redacted text is provided', () => {
+    it('anonymize leaves text unchanged when a detected entity has no match string', () => {
       const v = aggregator.combine({
         policy: policy({ redactionStyle: 'anonymize' }),
         guardrail: guardrail({

@@ -12,8 +12,15 @@ const TOPIC_DEFINITIONS: Record<string, string> = {
 
 const CONTENT_FILTER_TYPES = ['SEXUAL', 'VIOLENCE', 'HATE', 'INSULTS', 'MISCONDUCT'] as const;
 
-/** Managed PII that is anonymized when detected. */
-const PII_ANONYMIZE = ['EMAIL', 'PHONE', 'NAME', 'US_SOCIAL_SECURITY_NUMBER'] as const;
+/**
+ * Managed PII we redact in-app. Configured as `BLOCK` rather than `ANONYMIZE`
+ * because `ApplyGuardrail(source=INPUT)` never surfaces anonymized entities —
+ * Bedrock only masks `ANONYMIZE` PII on model *output*, so on input they are
+ * silently dropped and our redact path can never fire. `BLOCK` makes Bedrock
+ * *detect* and report them; the verdict aggregator maps detected PII to a
+ * `redact` decision and builds the masked preview from the returned match.
+ */
+const PII_REDACT = ['EMAIL', 'PHONE', 'NAME', 'US_SOCIAL_SECURITY_NUMBER'] as const;
 /** Credentials that are always blocked (surfaced as `secrets` by the adapter). */
 const PII_BLOCK = ['AWS_ACCESS_KEY', 'AWS_SECRET_KEY', 'PASSWORD', 'PIN'] as const;
 
@@ -56,7 +63,7 @@ export class SentinelGuardrail extends Construct {
       },
       sensitiveInformationPolicyConfig: {
         piiEntitiesConfig: [
-          ...PII_ANONYMIZE.map((type) => ({ type, action: 'ANONYMIZE' })),
+          ...PII_REDACT.map((type) => ({ type, action: 'BLOCK' })),
           ...PII_BLOCK.map((type) => ({ type, action: 'BLOCK' })),
         ],
       },
@@ -72,9 +79,13 @@ export class SentinelGuardrail extends Construct {
           : undefined,
     });
 
+    // Bump this description whenever the guardrail config above changes — a new
+    // description republishes the DRAFT as a fresh numbered version, so the
+    // pinned version the API uses actually reflects the change. (rev2: PII moved
+    // from ANONYMIZE to BLOCK so it is detected on input.)
     const version = new CfnGuardrailVersion(this, 'Version', {
       guardrailIdentifier: guardrail.attrGuardrailId,
-      description: `Initial ${props.strength} version`,
+      description: `${props.strength} rev2 — PII detect-on-input`,
     });
 
     this.guardrailId = guardrail.attrGuardrailId;
