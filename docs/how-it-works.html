@@ -738,8 +738,8 @@
             private S3 bucket behind a CloudFront CDN — cached at edge locations, no server to run.
           </li>
           <li>
-            <strong>API Gateway (HTTP API).</strong> The public HTTPS front door. It throttles at
-            the edge (20 req/s, burst 40) <em>before</em> any compute runs — the first cost-defense
+            <strong>API Gateway (HTTP API).</strong> The public HTTPS front door. It throttles right
+            there (20 req/s, burst 40) <em>before</em> any compute runs — the first cost-defense
             layer.
           </li>
           <li>
@@ -770,8 +770,18 @@
           </li>
         </ul>
         <p class="muted" style="font-size: 13px">
-          Cost is bounded by design: edge throttling, per-user / per-IP / global DynamoDB caps, a
+          Cost is bounded by design: request throttling, per-user / per-IP / global DynamoDB caps, a
           Budgets alarm, and a <code>PROVIDER=fake</code> switch that turns off every billable call.
+        </p>
+        <p class="muted" style="font-size: 13px">
+          <strong>One region, on purpose.</strong> The API, Bedrock, DynamoDB, and SSM all live in
+          <code>eu-north-1</code>. Only the dashboard is global (CloudFront); an API call from far
+          away pays the round-trip to Stockholm. For a low-traffic demo that's the right trade —
+          it's simpler, cheaper, and keeps the Lambda next to the data on the expensive path (the
+          model and data calls dwarf the network leg). The scale-out path is known if it's ever
+          needed: an edge-optimized / CloudFront-fronted API for latency, a multi-region active-active
+          deployment behind Route 53 latency-based routing, and DynamoDB global tables to replicate
+          the data — real cost and operational weight this demo deliberately doesn't take on.
         </p>
       </section>
 
