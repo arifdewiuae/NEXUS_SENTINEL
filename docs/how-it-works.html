@@ -722,7 +722,7 @@
         <div class="section-tag">// 07 — running on aws</div>
         <h2><span class="num">▸</span>What runs it on AWS</h2>
         <p>
-          The whole system is serverless and lives in one region (<code>eu-north-1</code>). The
+          The whole system is serverless and lives in one region. The
           dashboard is served from a CDN; the API runs next to the data it needs. Nothing is
           always-on, so it costs ~nothing when idle.
         </p>
@@ -775,8 +775,8 @@
         </p>
         <p class="muted" style="font-size: 13px">
           <strong>One region, on purpose.</strong> The API, Bedrock, DynamoDB, and SSM all live in
-          <code>eu-north-1</code>. Only the dashboard is global (CloudFront); an API call from far
-          away pays the round-trip to Stockholm. For a low-traffic demo that's the right trade —
+          one region. Only the dashboard is global (CloudFront); an API call from far away pays the
+          round-trip to that region. For a low-traffic demo that's the right trade —
           it's simpler, cheaper, and keeps the Lambda next to the data on the expensive path (the
           model and data calls dwarf the network leg). The scale-out path is known if it's ever
           needed: an edge-optimized / CloudFront-fronted API for latency, a multi-region active-active
