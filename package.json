@@ -13,6 +13,8 @@
     "dev": "concurrently -k -n api,web -c blue,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
     "dev:api": "PORT=${API_PORT:-5050} pnpm --filter @nexus/api start:dev",
     "dev:web": "NEXT_PUBLIC_API_URL=http://localhost:${API_PORT:-5050} WEB_PORT=${WEB_PORT:-5051} pnpm --filter @nexus/web dev",
+    "dev:aws": "concurrently -k -n api,web -c blue,magenta \"pnpm dev:api:aws\" \"pnpm dev:web\"",
+    "dev:api:aws": "PROVIDER=aws PORT=${API_PORT:-5050} pnpm --filter @nexus/api start:dev",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

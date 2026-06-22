@@ -9,6 +9,8 @@
     "synth": "cdk synth --quiet",
     "test": "vitest run",
     "deploy": "cdk deploy --all",
+    "prod:aws": "cdk deploy NexusSentinel-Api -c provider=aws",
+    "prod:fake": "cdk deploy NexusSentinel-Api -c provider=fake",
     "destroy": "cdk destroy --all"
   },
   "dependencies": {
