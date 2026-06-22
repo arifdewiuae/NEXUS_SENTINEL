@@ -47,6 +47,26 @@ pnpm dev:api                      # just the API (or: pnpm dev:web)
 pnpm --filter @nexus/infra synth  # cdk synth (no deploy)
 ```
 
+### Switching providers (`fake` ↔ `aws`)
+
+`PROVIDER` selects the adapter set (default `fake`). `fake` is offline and free; `aws` hits live
+Bedrock + DynamoDB, so it's a **spend switch** — it needs AWS credentials in your shell and the
+guardrail ids / table names / region in a gitignored `.env`, or the API fails fast at boot
+(`X is required when PROVIDER=aws`). Never wire `aws` into `test`/`test:e2e`/CI — those always run `fake`.
+
+```bash
+# local
+pnpm dev:aws                          # both servers against live AWS (or: pnpm dev:api:aws)
+
+# prod — flip the deployed Lambda's PROVIDER via CDK context (one env var, no image rebuild, ~1–2 min)
+pnpm --filter @nexus/infra prod:fake  # spend kill switch — redeploy API stack to fake
+pnpm --filter @nexus/infra prod:aws   # back to live
+```
+
+For a true cost emergency, `aws lambda update-function-configuration` flips the live function in
+seconds, but it **drifts from CDK** (the next `cdk deploy` reverts it) — break-glass only, then
+reconcile with `prod:fake`/`prod:aws`.
+
 ## Conventions
 
 - **TypeScript strict** everywhere (`tsconfig.base.json`). ESM (`NodeNext`) — relative imports
