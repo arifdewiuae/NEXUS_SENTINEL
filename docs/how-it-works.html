@@ -715,10 +715,6 @@
             <strong>AWS CDK</strong> for the infra — a pnpm monorepo.
           </li>
         </ul>
-        <p class="muted" style="font-size: 13px">
-          The decision aggregator is held to 100% branch coverage — it's the part you most want to
-          be able to reason about, so it's tested exhaustively.
-        </p>
       </section>
 
       <!-- ===================== AWS ===================== -->
@@ -727,7 +723,7 @@
         <h2><span class="num">▸</span>What runs it on AWS</h2>
         <p>
           The whole system is serverless and lives in one region (<code>eu-north-1</code>). The
-          dashboard is served from the edge; the API runs next to the data it needs. Nothing is
+          dashboard is served from a CDN; the API runs next to the data it needs. Nothing is
           always-on, so it costs ~nothing when idle.
         </p>
         <pre class="norm">browser ─▶ CloudFront ─▶ S3   (static dashboard, edge-cached)
@@ -1070,7 +1066,7 @@
         injection:
           "<strong>Injection screener (secondary, tiered).</strong> A cheap deterministic pre-screen runs on every prompt; only the ambiguous middle — a borderline signal, or a prompt the sanitizer had to de-obfuscate — <em>escalates</em> to a Claude Haiku call (forced tool-use, schema-validated) that classifies injection / jailbreak and grades denied topics. Fails <span class='glow'>open</span> — degrades to 'skipped' on error.",
         aggregate:
-          '<strong>Aggregate.</strong> A pure function combines both reports: each piece of evidence contributes block / redact / allow, ordered by precedence. 100% branch-tested.',
+          '<strong>Aggregate.</strong> A pure function combines both reports: each piece of evidence contributes block / redact / allow, ordered by precedence.',
         verdict:
           '<strong>Verdict.</strong> The response: a decision, matched categories, display scores, a redacted preview, a plain-language reason + fix advice, and an audit record. Any request can be replayed under another policy.',
       };
