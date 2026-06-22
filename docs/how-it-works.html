@@ -758,7 +758,8 @@
           </li>
           <li>
             <strong>SSM Parameter Store.</strong> Holds the guardrail ids / versions; the API reads
-            them by name, so a new guardrail version ships without touching the API stack.
+            them by name, so a new guardrail version rolls out with a plain redeploy — no recreating
+            the API.
           </li>
           <li>
             <strong>Budgets + CloudWatch.</strong> A monthly cost alarm and structured logs — which
